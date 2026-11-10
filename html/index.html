@@ -975,27 +975,7 @@ document
 
             if (idEmEdicao === null) {
 
-                if (movimento === "saida") {
-
-                    const saldo =
-                        calcularSaldo(
-                            categoria,
-                            material
-                        );
-
-                    if (quantidade > saldo) {
-
-                        alert(
-                            "Não é possível realizar esta saída.\n\n" +
-                            "Estoque disponível: " +
-                            saldo +
-                            "\nQuantidade solicitada: " +
-                            quantidade
-                        );
-
-                        return;
-                    }
-                }
+                // Saídas podem ultrapassar o saldo atual; o estoque ficará negativo.
 
                 const registro = {
 
@@ -1055,31 +1035,7 @@ document
                 return;
             }
 
-            let saldoDisponivel =
-                calcularSaldoSemRegistro(
-                    categoria,
-                    material,
-                    idEmEdicao
-                );
-
-            if (movimento === "saida") {
-
-                if (
-                    quantidade >
-                    saldoDisponivel
-                ) {
-
-                    alert(
-                        "Não é possível salvar esta alteração.\n\n" +
-                        "Estoque disponível: " +
-                        saldoDisponivel +
-                        "\nQuantidade solicitada: " +
-                        quantidade
-                    );
-
-                    return;
-                }
-            }
+            // Edições também permitem saldo negativo.
 
             movimentacoes[indice] = {
 
