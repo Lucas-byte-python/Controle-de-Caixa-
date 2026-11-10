@@ -1969,6 +1969,21 @@ function limparHistorico() {
         return;
     }
 
+    const palavraConfirmacao = prompt(
+        "CONFIRMAÇÃO DE SEGURANÇA\n\n" +
+        "Para apagar todo o histórico, digite a palavra abaixo exatamente como está:\n\n" +
+        "DESCARTAR"
+    );
+
+    if (palavraConfirmacao !== "DESCARTAR") {
+        alert(
+            "Ação cancelada.\n\n" +
+            "O histórico não foi apagado. " +
+            "É necessário digitar DESCARTAR em letras maiúsculas."
+        );
+        return;
+    }
+
     movimentacoes = [];
 
     salvar();
