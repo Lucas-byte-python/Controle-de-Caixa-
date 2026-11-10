@@ -64,6 +64,23 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
 @media(max-width:760px){.sidebar{width:76px;padding:18px 8px}.logo{margin-bottom:25px;padding-bottom:20px}.logo h2,.logo p,.menu-text{display:none}.logo-icon{width:46px;height:46px;border-radius:14px;font-size:22px}.menu button{text-align:center;padding:13px 4px}.menu-icon{width:auto}.main{margin-left:76px;width:calc(100% - 76px);padding:20px 14px 30px}.topbar{display:block}.topbar h1{font-size:22px}.date{display:inline-block;margin-top:13px}.cards{grid-template-columns:1fr 1fr;gap:10px}.card{padding:16px}.card-value{font-size:25px}.panel{padding:16px}.form-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.form-grid{grid-template-columns:1fr}.panel-header{align-items:flex-start;flex-direction:column}.panel-header .btn{width:100%}.topbar h1{font-size:20px}}
 
+
+/* GRÁFICOS DE MOVIMENTAÇÃO */
+.charts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:0 0 22px}
+.chart-panel{margin-bottom:0;min-width:0}
+.chart-heading{margin-bottom:12px}
+.chart-heading h2{margin-bottom:5px}
+.chart-heading p{font-size:11px;color:#91aacb}
+.chart-tag{font-size:9px;letter-spacing:1px;font-weight:800;color:#8ecbff;background:#168cf421;border:1px solid #168cf44a;border-radius:20px;padding:6px 9px}
+.chart-canvas-wrap{position:relative;width:100%;height:245px}
+.chart-canvas-wrap canvas{width:100%!important;height:100%!important}
+.chart-footnote{display:flex;justify-content:center;gap:22px;margin-top:8px;color:#a9bfdc;font-size:10px}
+.chart-footnote span{display:flex;align-items:center;gap:7px}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.legend-dot.entrada{background:#25b9ff}.legend-dot.saida{background:#ff7187}
+@media(max-width:1100px){.charts-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.chart-canvas-wrap{height:210px}.chart-panel{padding:14px}}
+
 </style>
 </head>
 
@@ -185,6 +202,44 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
                     </div>
                 </div>
 
+            </div>
+
+
+            <!-- GRÁFICOS DE MOVIMENTAÇÃO -->
+            <div class="charts-grid">
+                <div class="panel chart-panel">
+                    <div class="panel-header chart-heading">
+                        <div>
+                            <h2>Movimentação de Caixas</h2>
+                            <p>Entradas e saídas nos últimos 7 dias</p>
+                        </div>
+                        <span class="chart-tag">CAIXAS</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="graficoCaixas" aria-label="Gráfico de entradas e saídas de caixas"></canvas>
+                    </div>
+                    <div class="chart-footnote">
+                        <span><i class="legend-dot entrada"></i> Entradas</span>
+                        <span><i class="legend-dot saida"></i> Saídas</span>
+                    </div>
+                </div>
+
+                <div class="panel chart-panel">
+                    <div class="panel-header chart-heading">
+                        <div>
+                            <h2>Movimentação de Paletes</h2>
+                            <p>Entradas e saídas nos últimos 7 dias</p>
+                        </div>
+                        <span class="chart-tag">PALETES</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="graficoPaletes" aria-label="Gráfico de entradas e saídas de paletes"></canvas>
+                    </div>
+                    <div class="chart-footnote">
+                        <span><i class="legend-dot entrada"></i> Entradas</span>
+                        <span><i class="legend-dot saida"></i> Saídas</span>
+                    </div>
+                </div>
             </div>
 
             <div class="dashboard-grid">
@@ -479,6 +534,7 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
 </div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // script.js
 
@@ -505,6 +561,9 @@ let movimentacoes =
     ) || [];
 
 let idEmEdicao = null;
+
+let graficoCaixas = null;
+let graficoPaletes = null;
 
 
 /* =========================
@@ -1098,6 +1157,163 @@ function montarTabela(
 
 
 /* =========================
+   GRÁFICOS DE MOVIMENTAÇÃO
+========================= */
+
+function obterDadosGrafico(categoria) {
+    const hoje = new Date();
+    const dias = [];
+
+    for (let i = 6; i >= 0; i--) {
+        const data = new Date(hoje);
+        data.setDate(hoje.getDate() - i);
+
+        const chave = [
+            data.getFullYear(),
+            String(data.getMonth() + 1).padStart(2, "0"),
+            String(data.getDate()).padStart(2, "0")
+        ].join("-");
+
+        dias.push({
+            chave,
+            rotulo: data.toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit"
+            }),
+            entrada: 0,
+            saida: 0
+        });
+    }
+
+    const porData = Object.fromEntries(
+        dias.map(dia => [dia.chave, dia])
+    );
+
+    movimentacoes.forEach(registro => {
+        if (registro.categoria !== categoria) return;
+
+        const dataRegistro = new Date(registro.data);
+        if (Number.isNaN(dataRegistro.getTime())) return;
+
+        const chave = [
+            dataRegistro.getFullYear(),
+            String(dataRegistro.getMonth() + 1).padStart(2, "0"),
+            String(dataRegistro.getDate()).padStart(2, "0")
+        ].join("-");
+
+        if (!porData[chave]) return;
+
+        if (registro.movimento === "entrada") {
+            porData[chave].entrada += Number(registro.quantidade) || 0;
+        } else {
+            porData[chave].saida += Number(registro.quantidade) || 0;
+        }
+    });
+
+    return {
+        labels: dias.map(dia => dia.rotulo),
+        entradas: dias.map(dia => dia.entrada),
+        saidas: dias.map(dia => dia.saida)
+    };
+}
+
+function criarOuAtualizarGrafico(categoria, canvasId, instanciaAtual) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof Chart === "undefined") return instanciaAtual;
+
+    const dados = obterDadosGrafico(categoria);
+
+    const configuracao = {
+        type: "bar",
+        data: {
+            labels: dados.labels,
+            datasets: [
+                {
+                    label: "Entradas",
+                    data: dados.entradas,
+                    backgroundColor: "rgba(37, 185, 255, 0.78)",
+                    borderColor: "#25b9ff",
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    maxBarThickness: 25
+                },
+                {
+                    label: "Saídas",
+                    data: dados.saidas,
+                    backgroundColor: "rgba(255, 113, 135, 0.78)",
+                    borderColor: "#ff7187",
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    maxBarThickness: 25
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: "index"
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "#071b3d",
+                    titleColor: "#ffffff",
+                    bodyColor: "#dceaff",
+                    borderColor: "rgba(150,190,240,.25)",
+                    borderWidth: 1,
+                    padding: 11,
+                    displayColors: true
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: "#91aacb", font: { size: 10 } },
+                    border: { color: "rgba(150,190,240,.16)" }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        color: "#91aacb",
+                        font: { size: 10 }
+                    },
+                    grid: { color: "rgba(150,190,240,.10)" },
+                    border: { display: false }
+                }
+            }
+        }
+    };
+
+    if (instanciaAtual) {
+        instanciaAtual.data = configuracao.data;
+        instanciaAtual.update();
+        return instanciaAtual;
+    }
+
+    return new Chart(canvas, configuracao);
+}
+
+function atualizarGraficos() {
+    graficoCaixas = criarOuAtualizarGrafico(
+        "caixa",
+        "graficoCaixas",
+        graficoCaixas
+    );
+
+    graficoPaletes = criarOuAtualizarGrafico(
+        "palete",
+        "graficoPaletes",
+        graficoPaletes
+    );
+}
+
+
+/* =========================
    DASHBOARD
 ========================= */
 
@@ -1178,6 +1394,8 @@ function atualizarDashboard() {
     document.getElementById(
         "totalSaidas"
     ).textContent = saidas;
+
+    atualizarGraficos();
 }
 
 
