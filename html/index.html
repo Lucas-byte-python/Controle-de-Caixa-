@@ -1943,52 +1943,33 @@ function excluirMovimentacao(id) {
 
 function limparHistorico() {
 
-    if (
-        movimentacoes.length === 0
-    ) {
-
-        alert(
-            "Não existem movimentações."
-        );
-
+    if (movimentacoes.length === 0) {
+        alert("Não existem movimentações.");
         return;
     }
 
-    const confirmar =
-        confirm(
-
-            "ATENÇÃO!\n\n" +
-
-            "Isso irá apagar TODAS as movimentações.\n\n" +
-
-            "Deseja continuar?"
-
-        );
-
-    if (!confirmar) {
-        return;
-    }
-
-    const palavraConfirmacao = prompt(
-        "CONFIRMAÇÃO DE SEGURANÇA\n\n" +
-        "Para apagar todo o histórico, digite a palavra abaixo exatamente como está:\n\n" +
-        "DESCARTAR"
+    // A exclusão só é autorizada quando a palavra exata é digitada.
+    // Não existe confirmação por botão OK isoladamente.
+    const palavraConfirmacao = window.prompt(
+        "ATENÇÃO! Esta ação apagará TODAS as movimentações do histórico.\n\n" +
+        "Para confirmar, digite DESCARTAR no campo abaixo (em letras maiúsculas):",
+        ""
     );
 
     if (palavraConfirmacao !== "DESCARTAR") {
         alert(
-            "Ação cancelada.\n\n" +
-            "O histórico não foi apagado. " +
-            "É necessário digitar DESCARTAR em letras maiúsculas."
+            palavraConfirmacao === null
+                ? "Operação cancelada. O histórico foi mantido."
+                : "Palavra incorreta. O histórico foi mantido. Digite exatamente DESCARTAR."
         );
         return;
     }
 
     movimentacoes = [];
-
     salvar();
-
     atualizarTudo();
+
+    alert("Histórico apagado com sucesso.");
 }
 
 
