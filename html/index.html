@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" href="/img/ecossistema-astro-icon.png" type="image/png">
 
+    <!-- Ao recarregar a página principal (F5/Ctrl+R), exibe novamente a tela de LOAD. -->
+    <script>
+    (() => {
+        const navegacao = performance.getEntriesByType('navigation')[0];
+        if (navegacao && navegacao.type === 'reload') {
+            window.location.replace(new URL('load.html', window.location.href).href);
+        }
+    })();
+    </script>
+
 <style>
 .logo-icon img{width:100%;height:100%;border-radius:inherit;object-fit:cover}
 :root{--bg:#061735;--navy:#081d40;--panel:#102b55;--panel2:#173967;--blue:#168cf4;--blue2:#1554df;--text:#f4f8ff;--muted:#a8bad6;--line:rgba(150,190,240,.17)}
