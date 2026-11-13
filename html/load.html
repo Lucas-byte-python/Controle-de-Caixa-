@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carregando - Controle de Caixa</title>
+  <link rel="icon" href="/img/ecossistema-astro-icon.png" type="image/png">
+  <style>
+    :root {
+      --bg-deep: #040b09;
+      --bg-glow: #0c261e;
+      --emerald: #10b981;
+      --emerald-light: #34d399;
+      --gold: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      overflow: hidden;
+    }
+
+    /* Overlay principal */
+    #caixa-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 42%, var(--bg-glow) 0%, var(--bg-deep) 75%);
+      color: var(--text-main);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    /* Efeito suave de saída antes de abrir o index.html */
+    #caixa-loader.fade-out {
+      opacity: 0;
+      transform: scale(1.03);
+    }
+
+    /* Partículas sutis no fundo */
+    .particles {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(16, 185, 129, 0.25) 1px, transparent 1px),
+        radial-gradient(rgba(245, 158, 11, 0.2) 1px, transparent 1px);
+      background-size: 90px 90px, 140px 140px;
+      background-position: 0 0, 45px 45px;
+      animation: drift 25s linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes drift {
+      from { transform: translateY(0); }
+      to { transform: translateY(-90px); }
+    }
+
+    /* Núcleo Central e Anéis Orbitais */
+    .emblem-wrapper {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    .orbit-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+    }
+
+    .orbit-ring.primary {
+      width: 156px;
+      height: 156px;
+      border-top-color: var(--emerald-light);
+      border-right-color: rgba(16, 185, 129, 0.25);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+      animation: spinClockwise 3.2s cubic-bezier(0.4, 0.1, 0.6, 0.9) infinite;
+    }
+
+    .orbit-ring.secondary {
+      width: 128px;
+      height: 128px;
+      border-bottom-color: var(--gold);
+      border-left-color: rgba(245, 158, 11, 0.25);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+      animation: spinCounter 2.4s linear infinite;
+    }
+
+    @keyframes spinClockwise {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.03); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    @keyframes spinCounter {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    /* Ícone/Badge Central */
+    .core-badge {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #0f2e24, #071913);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      box-shadow: 
+        0 12px 30px rgba(0, 0, 0, 0.6),
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulseBadge 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseBadge {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .core-badge svg {
+      width: 42px;
+      height: 42px;
+      stroke: var(--emerald-light);
+      filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.45));
+    }
+
+    /* Textos Corporativos */
+    .loader-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 420px;
+      padding: 0 20px;
+    }
+
+    .tag-superior {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--emerald-light);
+      margin-bottom: 8px;
+    }
+
+    .titulo-sistema {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      text-shadow: 0 2px 15px rgba(16, 185, 129, 0.25);
+      margin-bottom: 6px;
+    }
+
+    .subtitulo-sistema {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 34px;
+    }
+
+    /* Status Dinâmico + Barra de Progresso */
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 300px;
+      margin: 0 auto 10px auto;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    #loader-percent {
+      color: var(--gold);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+      width: 300px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0 auto 28px auto;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--emerald), var(--emerald-light), var(--gold));
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+      transition: width 0.25s ease-out;
+    }
+
+    .rodape-sistema {
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(148, 163, 184, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="caixa-loader">
+    <div class="particles"></div>
+
+    <div class="emblem-wrapper">
+      <div class="orbit-ring primary"></div>
+      <div class="orbit-ring secondary"></div>
+      <div class="core-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="3" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+          <path d="M12 14.5h4" stroke="#f59e0b" />
+          <circle cx="7" cy="14.5" r="1" fill="#34d399" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="loader-content">
+      <div class="tag-superior">Gestão Financeira</div>
+      <h1 class="titulo-sistema">Controle de Caixa</h1>
+      <p class="subtitulo-sistema">Fluxo operacional, lançamentos e conciliação</p>
+
+      <div class="status-row">
+        <span id="loader-status">Iniciando terminal...</span>
+        <span id="loader-percent">0%</span>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-fill" id="loader-bar"></div>
+      </div>
+
+      <div class="rodape-sistema">Módulo PDV &bull; Tesouraria</div>
+    </div>
+  </div>
+
+  <script>
+    const URL_DESTINO = 'index.html'; // Caminho para a página principal
+
+    const overlay = document.getElementById('caixa-loader');
+    const bar = document.getElementById('loader-bar');
+    const statusText = document.getElementById('loader-status');
+    const percentText = document.getElementById('loader-percent');
+
+    const etapas = [
+      { pct: 20, msg: 'Conectando ao sistema...' },
+      { pct: 48, msg: 'Carregando saldo de abertura...' },
+      { pct: 76, msg: 'Sincronizando entradas e saídas...' },
+      { pct: 95, msg: 'Validando fluxo de caixa...' },
+      { pct: 100, msg: 'Abrindo painel...' }
+    ];
+
+    function atualizarProgresso(porcentagem, mensagem) {
+      const valor = Math.min(100, Math.max(0, porcentagem));
+      bar.style.width = `${valor}%`;
+      percentText.textContent = `${Math.round(valor)}%`;
+      if (mensagem) statusText.textContent = mensagem;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      let progressoAtual = 0;
+      let indiceEtapa = 0;
+
+      atualizarProgresso(0, etapas[0].msg);
+
+      const intervalo = setInterval(() => {
+        progressoAtual += Math.floor(Math.random() * 6) + 2;
+
+        if (indiceEtapa < etapas.length && progressoAtual >= etapas[indiceEtapa].pct) {
+          atualizarProgresso(etapas[indiceEtapa].pct, etapas[indiceEtapa].msg);
+          indiceEtapa++;
+        } else if (progressoAtual < 100) {
+          atualizarProgresso(progressoAtual);
+        }
+
+        if (progressoAtual >= 100) {
+          atualizarProgresso(100, 'Redirecionando...');
+          clearInterval(intervalo);
+
+          // Aguarda um instante em 100%, aplica o fade-out e redireciona
+          setTimeout(() => {
+            overlay.classList.add('fade-out');
+            setTimeout(() => {
+              window.location.href = URL_DESTINO;
+            }, 450);
+          }, 300);
+        }
+      }, 85);
+    });
+  </script>
+</body>
+</html>
