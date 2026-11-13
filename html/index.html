@@ -128,6 +128,53 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
 @media(max-width:850px){.charts-detail,.summary-charts-grid{grid-template-columns:1fr}.chart-toolbar{grid-template-columns:1fr 1fr}.chart-toolbar>div:first-child{grid-column:1/-1}.chart-canvas-large{height:280px}}
 @media(max-width:520px){.chart-panel-large{padding:17px}.chart-toolbar{grid-template-columns:1fr;gap:12px}.chart-toolbar>div:first-child{grid-column:auto}.chart-summary{gap:7px}.chart-summary-item{padding:10px 8px}.chart-summary-item strong{font-size:17px}.summary-label{font-size:9px}.chart-canvas-large{height:235px}}
 
+
+/* CENTRAL DE RELATÓRIOS */
+.report-help{font-size:11px;color:#91aacb;margin-top:7px;line-height:1.5}
+.report-label{font-size:9px;letter-spacing:1px;font-weight:800;color:#8ecbff;background:#168cf421;border:1px solid #168cf44a;border-radius:20px;padding:7px 10px;white-space:nowrap}
+.report-filters{margin-top:20px}
+.report-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.report-note{font-size:10px;line-height:1.6;color:#91aacb;margin-top:14px}
+.report-preview{min-height:230px}
+.report-empty{min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#9bb2d2;gap:8px}
+.report-empty-icon{font-size:32px}
+.report-empty strong{color:#eaf3ff;font-size:14px}
+.report-empty p{font-size:11px}
+.report-document{background:#fff;color:#17263b;border-radius:10px;padding:28px;overflow:hidden}
+.report-document *{color:inherit}
+.report-doc-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:3px solid #123d70;padding-bottom:17px;margin-bottom:18px}
+.report-brand{font-size:18px;font-weight:900;letter-spacing:.5px;color:#123d70}
+.report-subbrand{font-size:10px;color:#60738b;margin-top:5px}
+.report-doc-title{text-align:right;font-size:17px;font-weight:800;color:#123d70}
+.report-doc-meta{font-size:10px;color:#60738b;margin-top:6px;line-height:1.6}
+.report-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 22px}
+.report-kpi{border:1px solid #d9e2ec;border-radius:8px;padding:12px;background:#f6f9fc}
+.report-kpi span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:#60738b;margin-bottom:6px}
+.report-kpi strong{font-size:19px;color:#123d70}
+.report-group{margin:20px 0}
+.report-group h3{font-size:12px;color:#123d70;border-left:4px solid #168cf4;padding:7px 10px;background:#f1f6fb;margin-bottom:9px}
+.report-table{width:100%;min-width:0;border-collapse:collapse;margin:8px 0 14px}
+.report-table th{background:#123d70;color:#fff;padding:9px 8px;font-size:9px;text-align:left}
+.report-table td{color:#26384d;padding:8px;border-bottom:1px solid #e2e8f0;font-size:9px}
+.report-table tr:nth-child(even) td{background:#f7f9fc}
+.report-positive{color:#087b54!important;font-weight:800}
+.report-negative{color:#b42336!important;font-weight:800}
+.report-footer{border-top:1px solid #d9e2ec;margin-top:22px;padding-top:10px;display:flex;justify-content:space-between;gap:12px;font-size:9px;color:#718096}
+.print-area{display:none}
+@media(max-width:700px){.report-doc-header{display:block}.report-doc-title{text-align:left;margin-top:12px}.report-kpis{grid-template-columns:1fr}.report-document{padding:16px}.report-actions .btn{width:100%}}
+@media print{
+    @page{size:A4 portrait;margin:12mm}
+    html,body{background:#fff!important;min-height:0!important}
+    body:before,body:after,.app,.modal{display:none!important}
+    .print-area{display:block!important;position:static!important;width:100%!important;color:#17263b!important;background:#fff!important}
+    .report-document{padding:0!important;border-radius:0!important;overflow:visible!important}
+    .report-table{page-break-inside:auto}
+    .report-table tr{page-break-inside:avoid;page-break-after:auto}
+    .report-group{page-break-inside:avoid}
+    .report-doc-header,.report-kpis{page-break-inside:avoid}
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+
 </style>
 </head>
 
@@ -165,6 +212,13 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
                 <button onclick="mostrarSecao('paletes', this)">
                     <span class="menu-icon">🪵</span>
                     <span class="menu-text">Controle de Paletes</span>
+                </button>
+            </li>
+
+            <li>
+                <button onclick="mostrarSecao('relatorios', this)">
+                    <span class="menu-icon">🖨️</span>
+                    <span class="menu-text">Relatórios</span>
                 </button>
             </li>
 
@@ -543,6 +597,57 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
 
         </section>
 
+        <!-- RELATÓRIOS -->
+
+        <section id="relatorios" class="section">
+            <div class="panel report-config">
+                <div class="panel-header">
+                    <div>
+                        <h2>Central de Relatórios</h2>
+                        <p class="report-help">Escolha quais materiais deseja incluir e defina o período das movimentações.</p>
+                    </div>
+                    <span class="report-label">ASTRO • DOCUMENTOS</span>
+                </div>
+
+                <div class="form-grid report-filters">
+                    <div class="form-group">
+                        <label for="tipoRelatorio">Tipo de relatório</label>
+                        <select id="tipoRelatorio">
+                            <option value="caixa">Somente caixas</option>
+                            <option value="palete">Somente paletes</option>
+                            <option value="ambos" selected>Caixas e paletes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataInicialRelatorio">Data inicial</label>
+                        <input type="date" id="dataInicialRelatorio">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataFinalRelatorio">Data final</label>
+                        <input type="date" id="dataFinalRelatorio">
+                    </div>
+                </div>
+
+                <div class="report-actions">
+                    <button class="btn btn-primary" type="button" onclick="gerarRelatorio()">Gerar relatório</button>
+                    <button class="btn btn-secondary" type="button" id="botaoImprimirRelatorio" onclick="imprimirRelatorio()" disabled>Imprimir / Salvar em PDF</button>
+                </div>
+                <p class="report-note">Sem datas selecionadas, o relatório considera todo o histórico. O saldo atual considera todas as movimentações registradas, independentemente do período filtrado.</p>
+            </div>
+
+            <div class="panel report-preview">
+                <div class="panel-header">
+                    <h2>Pré-visualização</h2>
+                    <span class="report-label">VISUALIZAÇÃO DO DOCUMENTO</span>
+                </div>
+                <div id="visualizacaoRelatorio" class="report-empty">
+                    <span class="report-empty-icon">📄</span>
+                    <strong>Nenhum relatório gerado</strong>
+                    <p>Selecione o tipo de relatório e clique em “Gerar relatório”.</p>
+                </div>
+            </div>
+        </section>
+
         <!-- HISTÓRICO -->
 
         <section id="historico" class="section">
@@ -581,6 +686,8 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
         </section>
     </main>
 </div>
+
+<div id="areaImpressao" class="print-area" aria-hidden="true"></div>
 
 <div class="modal" id="modal">
     <div class="modal-content">
@@ -759,6 +866,11 @@ function mostrarSecao(secao, botao) {
         historico: [
             "Histórico",
             "Todas as movimentações registradas"
+        ],
+
+        relatorios: [
+            "Relatórios",
+            "Emissão e impressão de relatórios de caixas e paletes"
         ]
 
     };
@@ -1892,6 +2004,158 @@ function excluirMovimentacao(id) {
     );
 }
 
+
+
+/* =========================
+   RELATÓRIOS E IMPRESSÃO
+========================= */
+
+function escaparHTML(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caractere => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[caractere]));
+}
+
+function chaveDataLocal(valor) {
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return "";
+    return [
+        data.getFullYear(),
+        String(data.getMonth() + 1).padStart(2, "0"),
+        String(data.getDate()).padStart(2, "0")
+    ].join("-");
+}
+
+function formatarDataRelatorio(valor, incluirHora = false) {
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return "Data não informada";
+    return data.toLocaleString("pt-BR", incluirHora
+        ? { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }
+        : { day: "2-digit", month: "long", year: "numeric" });
+}
+
+function gerarRelatorio() {
+    const tipo = document.getElementById("tipoRelatorio").value;
+    const dataInicial = document.getElementById("dataInicialRelatorio").value;
+    const dataFinal = document.getElementById("dataFinalRelatorio").value;
+
+    if (dataInicial && dataFinal && dataInicial > dataFinal) {
+        alert("A data inicial não pode ser posterior à data final.");
+        return;
+    }
+
+    const categorias = tipo === "ambos" ? ["caixa", "palete"] : [tipo];
+    const nomes = { caixa: "CAIXAS", palete: "PALETES" };
+
+    const registros = movimentacoes
+        .filter(registro => categorias.includes(registro.categoria))
+        .filter(registro => {
+            const dia = chaveDataLocal(registro.data);
+            if (!dia) return false;
+            return (!dataInicial || dia >= dataInicial) && (!dataFinal || dia <= dataFinal);
+        })
+        .sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    const materiaisPorCategoria = {
+        caixa: caixas,
+        palete: paletes
+    };
+
+    let totalEntradas = 0;
+    let totalSaidas = 0;
+    let totalRegistros = registros.length;
+
+    const gruposHTML = categorias.map(categoria => {
+        const lista = materiaisPorCategoria[categoria];
+        const linhas = lista.map(material => {
+            const movimentos = registros.filter(r => r.categoria === categoria && r.material === material);
+            const entrada = movimentos.filter(r => r.movimento === "entrada")
+                .reduce((soma, r) => soma + (Number(r.quantidade) || 0), 0);
+            const saida = movimentos.filter(r => r.movimento === "saida")
+                .reduce((soma, r) => soma + (Number(r.quantidade) || 0), 0);
+            const saldoAtual = calcularSaldo(categoria, material);
+            totalEntradas += entrada;
+            totalSaidas += saida;
+            return `<tr>
+                <td>${escaparHTML(material)}</td>
+                <td>${entrada.toLocaleString("pt-BR")}</td>
+                <td>${saida.toLocaleString("pt-BR")}</td>
+                <td class="${saldoAtual < 0 ? "report-negative" : "report-positive"}">${saldoAtual.toLocaleString("pt-BR")}</td>
+            </tr>`;
+        }).join("");
+
+        return `<div class="report-group">
+            <h3>${nomes[categoria]}</h3>
+            <table class="report-table">
+                <thead><tr><th>Material</th><th>Entradas no período</th><th>Saídas no período</th><th>Saldo atual</th></tr></thead>
+                <tbody>${linhas}</tbody>
+            </table>
+        </div>`;
+    }).join("");
+
+    const linhasMovimentacoes = registros.length
+        ? registros.map(registro => `<tr>
+            <td>${formatarDataRelatorio(registro.data, true)}</td>
+            <td>${nomes[registro.categoria] || escaparHTML(registro.categoria)}</td>
+            <td>${escaparHTML(registro.material)}</td>
+            <td>${registro.movimento === "entrada" ? "Entrada" : "Saída"}</td>
+            <td>${(Number(registro.quantidade) || 0).toLocaleString("pt-BR")}</td>
+            <td>${escaparHTML(registro.destino || "—")}</td>
+        </tr>`).join("")
+        : '<tr><td colspan="6" style="text-align:center">Nenhuma movimentação encontrada para os filtros selecionados.</td></tr>';
+
+    const periodo = dataInicial || dataFinal
+        ? `${dataInicial ? formatarDataRelatorio(dataInicial + "T00:00:00") : "Início do histórico"} até ${dataFinal ? formatarDataRelatorio(dataFinal + "T00:00:00") : "Hoje"}`
+        : "Todo o histórico";
+
+    const titulo = tipo === "ambos" ? "RELATÓRIO GERAL • CAIXAS E PALETES" : `RELATÓRIO DE ${nomes[tipo]}`;
+    const emitido = new Date().toLocaleString("pt-BR");
+
+    const documento = `<article class="report-document">
+        <header class="report-doc-header">
+            <div>
+                <div class="report-brand">ASTROAGROCOMERCIAL</div>
+                <div class="report-subbrand">CONTROLE DE CAIXAS E PALETES • CENTRO DE DISTRIBUIÇÃO</div>
+            </div>
+            <div>
+                <div class="report-doc-title">${titulo}</div>
+                <div class="report-doc-meta">Período: ${periodo}<br>Emitido em: ${emitido}</div>
+            </div>
+        </header>
+        <div class="report-kpis">
+            <div class="report-kpi"><span>Movimentações no período</span><strong>${totalRegistros.toLocaleString("pt-BR")}</strong></div>
+            <div class="report-kpi"><span>Total de entradas</span><strong>${totalEntradas.toLocaleString("pt-BR")}</strong></div>
+            <div class="report-kpi"><span>Total de saídas</span><strong>${totalSaidas.toLocaleString("pt-BR")}</strong></div>
+        </div>
+        <h3 style="font-size:13px;color:#123d70;margin:18px 0 8px">RESUMO POR MATERIAL</h3>
+        ${gruposHTML}
+        <div class="report-group">
+            <h3>DETALHAMENTO DAS MOVIMENTAÇÕES</h3>
+            <table class="report-table">
+                <thead><tr><th>Data e hora</th><th>Categoria</th><th>Material</th><th>Tipo</th><th>Quantidade</th><th>Cliente / Rota</th></tr></thead>
+                <tbody>${linhasMovimentacoes}</tbody>
+            </table>
+        </div>
+        <footer class="report-footer">
+            <span>Documento gerado pelo Controle ASTRO</span>
+            <span>Uso interno • ASTROAGROCOMERCIAL</span>
+        </footer>
+    </article>`;
+
+    document.getElementById("visualizacaoRelatorio").innerHTML = documento;
+    document.getElementById("botaoImprimirRelatorio").disabled = false;
+}
+
+function imprimirRelatorio() {
+    const visualizacao = document.getElementById("visualizacaoRelatorio");
+    if (!visualizacao.querySelector(".report-document")) {
+        alert("Gere um relatório antes de imprimir.");
+        return;
+    }
+
+    document.getElementById("areaImpressao").innerHTML = visualizacao.innerHTML;
+    window.print();
+}
 
 /* =========================
    LIMPAR HISTÓRICO
