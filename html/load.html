@@ -253,7 +253,8 @@
   </div>
 
   <script>
-    const URL_DESTINO = 'index.html'; // Caminho para a página principal
+    const autenticado = localStorage.getItem('astroSessao') === 'ativa';
+    const URL_DESTINO = autenticado ? 'index.html' : 'login.html';
 
     const overlay = document.getElementById('caixa-loader');
     const bar = document.getElementById('loader-bar');
