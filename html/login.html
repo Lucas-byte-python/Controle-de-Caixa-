@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#061735">
+  <title>ASTROAGROCOMERCIAL | Acesso ao sistema</title>
+  <link rel="icon" href="/img/ecossistema-astro-icon.png" type="image/png">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="brand-side">
+      <div class="brand-orbit orbit-one"></div><div class="brand-orbit orbit-two"></div>
+      <div class="brand-content">
+        <img class="brand-logo" src="/img/ecossistema-astro-icon.png" alt="Logo ASTROAGROCOMERCIAL">
+        <span class="eyebrow">ASTROAGROCOMERCIAL</span>
+        <h1>Controle de<br><span>Caixas &amp; Paletes</span></h1>
+        <p>Gestão inteligente de embalagens e movimentações do Centro de Distribuição.</p>
+        <div class="brand-foot"><span></span> DISTRIBUIÇÃO • ORGANIZAÇÃO • EFICIÊNCIA</div>
+      </div>
+    </section>
+    <section class="form-side">
+      <div class="auth-card">
+        <div class="mobile-brand"><img src="/img/ecossistema-astro-icon.png" alt=""><span>ASTROAGROCOMERCIAL</span></div>
+        <div class="form-heading">
+          <span class="form-kicker" id="formKicker">ÁREA RESTRITA</span>
+          <h2 id="formTitle">Bem-vindo de volta</h2>
+          <p id="formDescription">Entre com seus dados para acessar o sistema.</p>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Acesso">
+          <button class="tab active" id="tabLogin" type="button">Entrar</button>
+          <button class="tab" id="tabCadastro" type="button">Criar conta</button>
+        </div>
+        <form id="loginForm" autocomplete="on">
+          <label for="loginEmail">E-mail</label>
+          <div class="input-wrap"><span>✉</span><input id="loginEmail" type="email" placeholder="seuemail@empresa.com" autocomplete="username" required></div>
+          <label for="loginPassword">Senha</label>
+          <div class="input-wrap"><span>▣</span><input id="loginPassword" type="password" placeholder="Digite sua senha" autocomplete="current-password" required><button class="show-password" type="button" data-target="loginPassword" aria-label="Mostrar senha">◉</button></div>
+          <button class="submit-button" type="submit">Acessar sistema <span>→</span></button>
+          <p class="form-message" id="loginMessage" role="status"></p>
+        </form>
+        <form id="registerForm" class="hidden" autocomplete="on">
+          <label for="registerName">Nome completo</label>
+          <div class="input-wrap"><span>♙</span><input id="registerName" type="text" placeholder="Como podemos chamar você?" maxlength="80" autocomplete="name" required></div>
+          <label for="registerEmail">E-mail</label>
+          <div class="input-wrap"><span>✉</span><input id="registerEmail" type="email" placeholder="seuemail@empresa.com" autocomplete="email" required></div>
+          <label for="registerPassword">Criar senha</label>
+          <div class="input-wrap"><span>▣</span><input id="registerPassword" type="password" placeholder="Mínimo de 8 caracteres" minlength="8" autocomplete="new-password" required><button class="show-password" type="button" data-target="registerPassword" aria-label="Mostrar senha">◉</button></div>
+          <label for="confirmPassword">Confirmar senha</label>
+          <div class="input-wrap"><span>✓</span><input id="confirmPassword" type="password" placeholder="Digite a senha novamente" minlength="8" autocomplete="new-password" required></div>
+          <button class="submit-button" type="submit">Cadastrar conta <span>→</span></button>
+          <p class="form-message" id="registerMessage" role="status"></p>
+        </form>
+        <div class="security-note"><span>⌑</span><p>Acesso destinado aos colaboradores autorizados da ASTROAGROCOMERCIAL.</p></div>
+        <footer>© <span id="year"></span> ASTROAGROCOMERCIAL • SISTEMA INTERNO</footer>
+      </div>
+    </section>
+  </main>
+  <script src="/js/auth.js"></script>
+</body>
+</html>
