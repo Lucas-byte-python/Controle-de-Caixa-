@@ -130,7 +130,7 @@ function abrirModal(categoria) {
     document.getElementById("movimento")
         .value = "entrada";
 
-    // Botão para encerrar a sessão atual.\nconst topbar = document.querySelector(".topbar");\nif (topbar && !document.getElementById("astroLogout")) {\n    const botaoSair = document.createElement("button");\n    botaoSair.id = "astroLogout";\n    botaoSair.type = "button";\n    botaoSair.textContent = "Sair";\n    botaoSair.className = "btn btn-secondary";\n    botaoSair.style.marginLeft = "12px";\n    botaoSair.addEventListener("click", () => {\n        localStorage.removeItem("astroSessao");\n        window.location.replace("/html/load.html");\n    });\n    const data = document.getElementById("dataAtual");\n    if (data) data.parentNode.insertBefore(botaoSair, data.nextSibling);\n    else topbar.appendChild(botaoSair);\n}\n\natualizarMateriais();
+    atualizarMateriais();
 }
 
 
