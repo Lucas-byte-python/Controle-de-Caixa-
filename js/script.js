@@ -1,3 +1,9 @@
+// Proteção básica de navegação: exige sessão local antes de abrir o painel.
+if (localStorage.getItem("astroSessao") !== "ativa") {
+    window.location.replace("/html/load.html");
+    throw new Error("Acesso restrito: sessão não encontrada.");
+}
+
 // ASTROAGROCOMERCIAL | Controle de Caixas e Paletes
 // Lógica de inicialização e recarga
 (() => {
@@ -124,7 +130,7 @@ function abrirModal(categoria) {
     document.getElementById("movimento")
         .value = "entrada";
 
-    atualizarMateriais();
+    // Botão para encerrar a sessão atual.\nconst topbar = document.querySelector(".topbar");\nif (topbar && !document.getElementById("astroLogout")) {\n    const botaoSair = document.createElement("button");\n    botaoSair.id = "astroLogout";\n    botaoSair.type = "button";\n    botaoSair.textContent = "Sair";\n    botaoSair.className = "btn btn-secondary";\n    botaoSair.style.marginLeft = "12px";\n    botaoSair.addEventListener("click", () => {\n        localStorage.removeItem("astroSessao");\n        window.location.replace("/html/load.html");\n    });\n    const data = document.getElementById("dataAtual");\n    if (data) data.parentNode.insertBefore(botaoSair, data.nextSibling);\n    else topbar.appendChild(botaoSair);\n}\n\natualizarMateriais();
 }
 
 
