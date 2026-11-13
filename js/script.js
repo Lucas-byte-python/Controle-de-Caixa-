@@ -1491,3 +1491,21 @@ configurarFiltrosGraficos();
 atualizarData();
 
 atualizarTudo();
+
+
+// =========================
+// IDENTIFICAÇÃO E ENCERRAMENTO DA SESSÃO
+// =========================
+function encerrarSessao() {
+    if (!confirm("Deseja realmente sair do sistema?")) return;
+    localStorage.removeItem("astroSessao");
+    sessionStorage.removeItem("astroNomeUsuario");
+    window.location.replace("/html/load.html");
+}
+
+(function exibirUsuarioLogado() {
+    const campo = document.getElementById("usuarioLogado");
+    if (!campo) return;
+    const nome = sessionStorage.getItem("astroNomeUsuario");
+    if (nome) campo.textContent = nome;
+})();
