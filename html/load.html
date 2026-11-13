@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carregando - Controle de Caixa</title>
+  <title>ASTROAGROCOMERCIAL | Carregando sistema</title>
   <link rel="icon" href="/img/ecossistema-astro-icon.png" type="image/png">
   <style>
     :root {
-      --bg-deep: #040b09;
-      --bg-glow: #0c261e;
-      --emerald: #10b981;
-      --emerald-light: #34d399;
-      --gold: #f59e0b;
+      --bg-deep: #061735;
+      --bg-glow: #102b55;
+      --emerald: #168cf4;
+      --emerald-light: #25aaff;
+      --gold: #8fc9ff;
       --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --text-muted: #a8bad6;
     }
 
     * {
@@ -53,8 +53,8 @@
       position: absolute;
       inset: 0;
       background-image: 
-        radial-gradient(rgba(16, 185, 129, 0.25) 1px, transparent 1px),
-        radial-gradient(rgba(245, 158, 11, 0.2) 1px, transparent 1px);
+        radial-gradient(rgba(22, 140, 244, 0.25) 1px, transparent 1px),
+        radial-gradient(rgba(143, 201, 255, 0.2) 1px, transparent 1px);
       background-size: 90px 90px, 140px 140px;
       background-position: 0 0, 45px 45px;
       animation: drift 25s linear infinite;
@@ -87,8 +87,8 @@
       width: 156px;
       height: 156px;
       border-top-color: var(--emerald-light);
-      border-right-color: rgba(16, 185, 129, 0.25);
-      box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+      border-right-color: rgba(22, 140, 244, 0.25);
+      box-shadow: 0 0 25px rgba(22, 140, 244, 0.2);
       animation: spinClockwise 3.2s cubic-bezier(0.4, 0.1, 0.6, 0.9) infinite;
     }
 
@@ -97,7 +97,7 @@
       height: 128px;
       border-bottom-color: var(--gold);
       border-left-color: rgba(245, 158, 11, 0.25);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 20px rgba(143, 201, 255, 0.15);
       animation: spinCounter 2.4s linear infinite;
     }
 
@@ -118,8 +118,8 @@
       width: 84px;
       height: 84px;
       border-radius: 22px;
-      background: linear-gradient(145deg, #0f2e24, #071913);
-      border: 1px solid rgba(52, 211, 153, 0.35);
+      background: linear-gradient(145deg, #173967, #081d40);
+      border: 1px solid rgba(37, 170, 255, 0.35);
       box-shadow: 
         0 12px 30px rgba(0, 0, 0, 0.6),
         inset 0 1px 1px rgba(255, 255, 255, 0.15);
@@ -138,7 +138,7 @@
       width: 42px;
       height: 42px;
       stroke: var(--emerald-light);
-      filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.45));
+      filter: drop-shadow(0 0 8px rgba(37, 170, 255, 0.45));
     }
 
     /* Textos Corporativos */
@@ -208,8 +208,8 @@
       height: 100%;
       width: 0%;
       border-radius: 999px;
-      background: linear-gradient(90deg, var(--emerald), var(--emerald-light), var(--gold));
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+      background: linear-gradient(90deg, #1554df, #168cf4, #8fc9ff);
+      box-shadow: 0 0 12px rgba(22, 140, 244, 0.6);
       transition: width 0.25s ease-out;
     }
 
@@ -230,22 +230,17 @@
       <div class="orbit-ring primary"></div>
       <div class="orbit-ring secondary"></div>
       <div class="core-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="5" width="20" height="14" rx="3" />
-          <line x1="2" y1="10" x2="22" y2="10" />
-          <path d="M12 14.5h4" stroke="#f59e0b" />
-          <circle cx="7" cy="14.5" r="1" fill="#34d399" />
-        </svg>
+        <img src="/img/ecossistema-astro-icon.png" alt="ASTROAGROCOMERCIAL" style="width:58px;height:58px;object-fit:contain;border-radius:13px;">
       </div>
     </div>
 
     <div class="loader-content">
-      <div class="tag-superior">Gestão Financeira</div>
-      <h1 class="titulo-sistema">Controle de Caixa</h1>
-      <p class="subtitulo-sistema">Fluxo operacional, lançamentos e conciliação</p>
+      <div class="tag-superior">ASTROAGROCOMERCIAL</div>
+      <h1 class="titulo-sistema">Controle de Caixas &amp; Paletes</h1>
+      <p class="subtitulo-sistema">Gestão de embalagens e movimentações do Centro de Distribuição</p>
 
       <div class="status-row">
-        <span id="loader-status">Iniciando terminal...</span>
+        <span id="loader-status">Preparando centro de distribuição...</span>
         <span id="loader-percent">0%</span>
       </div>
 
@@ -253,7 +248,7 @@
         <div class="progress-fill" id="loader-bar"></div>
       </div>
 
-      <div class="rodape-sistema">Módulo PDV &bull; Tesouraria</div>
+      <div class="rodape-sistema">Distribuição de frutas, verduras e legumes</div>
     </div>
   </div>
 
@@ -266,11 +261,11 @@
     const percentText = document.getElementById('loader-percent');
 
     const etapas = [
-      { pct: 20, msg: 'Conectando ao sistema...' },
-      { pct: 48, msg: 'Carregando saldo de abertura...' },
-      { pct: 76, msg: 'Sincronizando entradas e saídas...' },
-      { pct: 95, msg: 'Validando fluxo de caixa...' },
-      { pct: 100, msg: 'Abrindo painel...' }
+      { pct: 20, msg: 'Conectando ao sistema ASTRO...' },
+      { pct: 48, msg: 'Consultando caixas e paletes...' },
+      { pct: 76, msg: 'Organizando movimentações do estoque...' },
+      { pct: 95, msg: 'Conferindo informações do CD...' },
+      { pct: 100, msg: 'Preparando painel de controle...' }
     ];
 
     function atualizarProgresso(porcentagem, mensagem) {
@@ -284,7 +279,7 @@
       let progressoAtual = 0;
       let indiceEtapa = 0;
 
-      atualizarProgresso(0, etapas[0].msg);
+      atualizarProgresso(0, 'Iniciando gestão ASTRO...');
 
       const intervalo = setInterval(() => {
         progressoAtual += Math.floor(Math.random() * 6) + 2;
@@ -297,7 +292,7 @@
         }
 
         if (progressoAtual >= 100) {
-          atualizarProgresso(100, 'Redirecionando...');
+          atualizarProgresso(100, 'Tudo pronto! Abrindo o sistema...');
           clearInterval(intervalo);
 
           // Aguarda um instante em 100%, aplica o fade-out e redireciona
