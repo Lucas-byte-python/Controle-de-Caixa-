@@ -41,3 +41,28 @@ CREATE TABLE IF NOT EXISTS astro_devolucoes_caixas (
   KEY idx_astro_devolucoes_data (recebido_em)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+
+-- Controle de cancelamento/alteração e trilha de auditoria das devoluções.
+-- Estas tabelas complementares preservam o registro original e o histórico de ações.
+CREATE TABLE IF NOT EXISTS astro_devolucoes_controle (
+  devolucao_id BIGINT UNSIGNED NOT NULL,
+  cancelada TINYINT(1) NOT NULL DEFAULT 0,
+  alterado_em TIMESTAMP NULL DEFAULT NULL,
+  alterado_por BIGINT UNSIGNED NULL,
+  PRIMARY KEY (devolucao_id),
+  KEY idx_astro_devolucoes_controle_cancelada (cancelada)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS astro_devolucoes_auditoria (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  devolucao_id BIGINT UNSIGNED NOT NULL,
+  usuario_id BIGINT UNSIGNED NOT NULL,
+  acao VARCHAR(40) NOT NULL,
+  detalhes JSON NULL,
+  criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_astro_devolucoes_auditoria_devolucao (devolucao_id),
+  KEY idx_astro_devolucoes_auditoria_usuario (usuario_id),
+  KEY idx_astro_devolucoes_auditoria_data (criado_em)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
