@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const { getPool, send, createSession, setSessionCookie, onlyMethod } = require("../_lib/auth");
+const { getPool, send, createSession, setSessionCookie, onlyMethod, publicAuthError } = require("../_lib/auth");
 
 module.exports = async function handler(req, res) {
   if (!onlyMethod(req, res, "POST")) return;
@@ -9,6 +9,10 @@ module.exports = async function handler(req, res) {
     const senha = String(req.body?.senha || "");
 
     if (!email || !senha) return send(res, 400, { error: "Informe e-mail e senha." });
+    if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+      const failure = publicAuthError(new Error("SESSION_SECRET_MISSING"));
+      return send(res, failure.status, { error: failure.error });
+    }
 
     const db = getPool();
     const [rows] = await db.execute(
@@ -26,7 +30,7 @@ module.exports = async function handler(req, res) {
 
     return send(res, 200, { success: true, user });
   } catch (error) {
-    console.error("Erro no login:", error);
-    return send(res, 500, { error: "Não foi possível entrar. Confira a conexão com o banco." });
+    const failure = publicAuthError(error, "realizar o login");
+    return send(res, failure.status, { error: failure.error });
   }
 };
