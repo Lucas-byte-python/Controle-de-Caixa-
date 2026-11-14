@@ -94,6 +94,11 @@ function mostrarSecao(secao, botao) {
             "Entrada, saída e saldo dos paletes"
         ],
 
+        devolucoes: [
+            "Devolução de Caixas",
+            "Confirmação e consulta de caixas recebidas de volta"
+        ],
+
         historico: [
             "Histórico",
             "Todas as movimentações registradas"
@@ -1518,3 +1523,170 @@ async function encerrarSessao() {
         alert("Não foi possível sair agora. Verifique sua conexão e tente novamente.");
     }
 }
+
+
+// =========================
+// DEVOLUÇÕES DE CAIXAS
+// =========================
+function prepararFormularioDevolucao() {
+    const select = document.getElementById("devolucaoCaixa");
+    if (!select) return;
+    select.innerHTML = '<option value="">Selecione o tipo de caixa</option>';
+    caixas.forEach(nome => {
+        const option = document.createElement("option");
+        option.value = nome;
+        option.textContent = nome;
+        select.appendChild(option);
+    });
+}
+
+function mensagemDevolucao(texto, erro = false) {
+    const el = document.getElementById("devolucaoMensagem");
+    if (!el) return;
+    el.textContent = texto;
+    el.className = "return-message " + (erro ? "error" : "success");
+}
+
+function formatarDataDevolucao(valor) {
+    if (!valor) return "—";
+    const data = new Date(valor);
+    return Number.isNaN(data.getTime()) ? "—" : data.toLocaleString("pt-BR");
+}
+
+function escaparDevolucao(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caractere => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[caractere]);
+}
+
+document.getElementById("devolucaoFoto")?.addEventListener("change", function () {
+    const arquivo = this.files && this.files[0];
+    const preview = document.getElementById("devolucaoPreview");
+    if (!arquivo) {
+        preview.hidden = true;
+        return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type) || arquivo.size > 2 * 1024 * 1024) {
+        this.value = "";
+        preview.hidden = true;
+        mensagemDevolucao("Selecione uma imagem JPG, PNG ou WEBP de até 2 MB.", true);
+        return;
+    }
+    document.getElementById("devolucaoPreviewImg").src = URL.createObjectURL(arquivo);
+    document.getElementById("devolucaoFotoNome").textContent = arquivo.name;
+    preview.hidden = false;
+    mensagemDevolucao("");
+});
+
+document.getElementById("formDevolucao")?.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const botao = document.getElementById("botaoSalvarDevolucao");
+    const arquivo = document.getElementById("devolucaoFoto").files[0];
+    if (!arquivo) return mensagemDevolucao("Anexe a foto da nota fiscal ou do comprovante.", true);
+    if (arquivo.size > 2 * 1024 * 1024) return mensagemDevolucao("A imagem deve ter no máximo 2 MB.", true);
+
+    botao.disabled = true;
+    botao.textContent = "Salvando...";
+    mensagemDevolucao("Enviando registro e comprovante...");
+
+    try {
+        const fotoDataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error("Não foi possível ler a imagem."));
+            reader.readAsDataURL(arquivo);
+        });
+
+        const payload = {
+            notaFiscal: document.getElementById("devolucaoNota").value.trim(),
+            loja: document.getElementById("devolucaoLoja").value.trim(),
+            caixa: document.getElementById("devolucaoCaixa").value,
+            quantidade: Number(document.getElementById("devolucaoQuantidade").value),
+            fotoDataUrl,
+            fotoNome: arquivo.name
+        };
+
+        const resposta = await fetch("/api/devolucoes", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível registrar a devolução.");
+
+        this.reset();
+        document.getElementById("devolucaoPreview").hidden = true;
+        mensagemDevolucao("Devolução confirmada e salva com sucesso.");
+        await carregarDevolucoes();
+    } catch (erro) {
+        mensagemDevolucao(erro.message || "Erro ao salvar a devolução.", true);
+    } finally {
+        botao.disabled = false;
+        botao.textContent = "Confirmar recebimento";
+    }
+});
+
+document.getElementById("botaoLimparDevolucao")?.addEventListener("click", () => {
+    document.getElementById("devolucaoPreview").hidden = true;
+    mensagemDevolucao("");
+});
+
+document.getElementById("filtroDevolucoes")?.addEventListener("input", () => {
+    carregarDevolucoes();
+});
+
+async function carregarDevolucoes() {
+    const tabela = document.getElementById("tabelaDevolucoes");
+    if (!tabela) return;
+    tabela.innerHTML = '<tr><td colspan="7" class="empty">Carregando devoluções...</td></tr>';
+    try {
+        const resposta = await fetch("/api/devolucoes", { credentials: "same-origin", cache: "no-store" });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível carregar o histórico.");
+        const filtro = (document.getElementById("filtroDevolucoes")?.value || "").trim().toLocaleLowerCase("pt-BR");
+        const registros = (dados.devolucoes || []).filter(item =>
+            [item.nota_fiscal, item.loja, item.caixa, item.registrado_por]
+                .some(valor => String(valor || "").toLocaleLowerCase("pt-BR").includes(filtro))
+        );
+        if (!registros.length) {
+            tabela.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma devolução encontrada.</td></tr>';
+            return;
+        }
+        tabela.innerHTML = registros.map(item => `<tr>
+            <td>${escaparDevolucao(formatarDataDevolucao(item.recebido_em))}</td>
+            <td><strong>${escaparDevolucao(item.nota_fiscal)}</strong></td>
+            <td>${escaparDevolucao(item.loja)}</td>
+            <td>${escaparDevolucao(item.caixa)}</td>
+            <td>${Number(item.quantidade).toLocaleString("pt-BR")}</td>
+            <td>${escaparDevolucao(item.registrado_por || "—")}</td>
+            <td><button type="button" class="btn btn-secondary btn-small" onclick="visualizarComprovanteDevolucao(${Number(item.id)})">Ver foto</button></td>
+        </tr>`).join("");
+    } catch (erro) {
+        tabela.innerHTML = '<tr><td colspan="7" class="empty">' + escaparDevolucao(erro.message) + '</td></tr>';
+    }
+}
+
+async function visualizarComprovanteDevolucao(id) {
+    try {
+        const resposta = await fetch("/api/devolucoes?id=" + encodeURIComponent(id), {
+            credentials: "same-origin", cache: "no-store"
+        });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível abrir o comprovante.");
+        const janela = window.open("", "_blank");
+        if (!janela) return alert("Permita a abertura de janelas pop-up para visualizar o comprovante.");
+        const imagem = String(dados.fotoDataUrl || "");
+        if (!/^data:image\/(jpeg|png|webp);base64,/.test(imagem)) {
+            janela.close();
+            throw new Error("O comprovante armazenado não é uma imagem válida.");
+        }
+        janela.document.write("<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'><title>Comprovante de devolução</title><meta name='viewport' content='width=device-width,initial-scale=1'><style>body{margin:0;padding:24px;background:#0b1d36;color:#fff;font:14px Arial;text-align:center}img{max-width:100%;height:auto;max-height:90vh;object-fit:contain}h2{font-size:17px}</style></head><body><h2>Comprovante de devolução</h2><img alt='Foto do comprovante' src='" + imagem + "'></body></html>");
+        janela.document.close();
+    } catch (erro) {
+        alert(erro.message || "Erro ao abrir comprovante.");
+    }
+}
+
+prepararFormularioDevolucao();
+carregarDevolucoes();
