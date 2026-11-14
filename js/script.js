@@ -1595,8 +1595,9 @@ function atualizarPreviewDevolucao(input) {
     if (!arquivo || !preview || !imagem || !pdf || !nome) return;
 
     const tiposPermitidos = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+    const nomeMinusculo = arquivo.name.toLowerCase();
     const tipoValido = tiposPermitidos.includes(arquivo.type) ||
-        (/\\.(pdf|jpe?g|png|webp)$/i).test(arquivo.name);
+        [".pdf", ".jpg", ".jpeg", ".png", ".webp"].some(extensao => nomeMinusculo.endsWith(extensao));
 
     if (!tipoValido || arquivo.size > 2 * 1024 * 1024) {
         input.value = "";
@@ -1606,7 +1607,7 @@ function atualizarPreviewDevolucao(input) {
 
     devolucaoArquivoUrl = URL.createObjectURL(arquivo);
     const ehImagem = arquivo.type.startsWith("image/") ||
-        (/\\.(jpe?g|png|webp)$/i).test(arquivo.name);
+        [".jpg", ".jpeg", ".png", ".webp"].some(extensao => nomeMinusculo.endsWith(extensao));
 
     if (ehImagem) {
         imagem.src = devolucaoArquivoUrl;
