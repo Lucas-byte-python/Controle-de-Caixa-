@@ -24,7 +24,9 @@ module.exports = async function handler(req, res) {
     if (!senhaValida) return send(res, 403, { error: "A senha informada está incorreta." });
 
     await connection.beginTransaction();
-    // Apaga somente dados vinculados ao usuário autenticado.
+    // Apaga também a trilha de auditoria e os controles das devoluções da conta.
+    await connection.execute("DELETE FROM astro_devolucoes_auditoria WHERE devolucao_id IN (SELECT id FROM astro_devolucoes_caixas WHERE usuario_id = ?)", [user.id]);
+    await connection.execute("DELETE FROM astro_devolucoes_controle WHERE devolucao_id IN (SELECT id FROM astro_devolucoes_caixas WHERE usuario_id = ?)", [user.id]);
     await connection.execute("DELETE FROM astro_devolucoes_caixas WHERE usuario_id = ?", [user.id]);
     await connection.execute("DELETE FROM astro_configuracoes WHERE usuario_id = ?", [user.id]);
     await connection.execute("DELETE FROM astro_usuarios WHERE id = ?", [user.id]);
