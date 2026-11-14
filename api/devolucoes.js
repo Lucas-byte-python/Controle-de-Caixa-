@@ -12,11 +12,12 @@ module.exports = async function handler(req, res) {
       if (id) {
         if (!Number.isSafeInteger(id) || id < 1) return send(res, 400, { error: "Identificador inválido." });
         const [rows] = await db.execute(
-          "SELECT id, foto_data_url FROM astro_devolucoes_caixas WHERE id = ? AND usuario_id = ? LIMIT 1",
+          "SELECT id, foto_data_url, foto_nome FROM astro_devolucoes_caixas WHERE id = ? AND usuario_id = ? LIMIT 1",
           [id, user.id]
         );
-        if (!rows.length) return send(res, 404, { error: "Comprovante não encontrado." });
-        return send(res, 200, { fotoDataUrl: rows[0].foto_data_url });
+        if (!rows.length) return send(res, 404, { error: "Registro não encontrado." });
+        if (!rows[0].foto_data_url) return send(res, 404, { error: "Esta devolução foi registrada sem anexo." });
+        return send(res, 200, { fotoDataUrl: rows[0].foto_data_url, fotoNome: rows[0].foto_nome });
       }
 
       const [rows] = await db.execute(
@@ -31,15 +32,15 @@ module.exports = async function handler(req, res) {
     const loja = String(req.body?.loja || "").trim();
     const caixa = String(req.body?.caixa || "").trim();
     const quantidade = Number(req.body?.quantidade);
-    const fotoDataUrl = String(req.body?.fotoDataUrl || "");
-    const fotoNome = String(req.body?.fotoNome || "comprovante").trim().slice(0, 255);
+    const fotoDataUrl = req.body?.fotoDataUrl ? String(req.body.fotoDataUrl) : null;
+    const fotoNome = fotoDataUrl ? String(req.body?.fotoNome || "anexo").trim().slice(0, 255) : null;
 
-    if (!notaFiscal || notaFiscal.length > 50) return send(res, 400, { error: "Informe um número de nota fiscal válido (até 50 caracteres)." });
+    if (!notaFiscal || notaFiscal.length > 50) return send(res, 400, { error: "Informe o número da nota fiscal (até 50 caracteres)." });
     if (!loja || loja.length > 120) return send(res, 400, { error: "Informe a loja de origem (até 120 caracteres)." });
     if (!caixa || caixa.length > 120) return send(res, 400, { error: "Selecione o tipo de caixa." });
     if (!Number.isSafeInteger(quantidade) || quantidade < 1 || quantidade > 1000000) return send(res, 400, { error: "Informe uma quantidade válida." });
-    if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(fotoDataUrl) || fotoDataUrl.length > 2_900_000) {
-      return send(res, 400, { error: "Anexe uma foto JPG, PNG ou WEBP de até 2 MB." });
+    if (fotoDataUrl && (!/^data:(application\/pdf|image\/(jpeg|png|webp));base64,[A-Za-z0-9+/]+=*$/.test(fotoDataUrl) || fotoDataUrl.length > 2_900_000)) {
+      return send(res, 400, { error: "O anexo deve ser PDF, JPG, PNG ou WEBP de até 2 MB." });
     }
 
     await db.execute(
