@@ -149,19 +149,29 @@ module.exports = async function handler(req, res) {
     const campos = validarCampos(req.body);
     if (campos.error) return send(res, 400, { error: campos.error });
 
-    const [result] = await db.execute(
-      "INSERT INTO astro_devolucoes_caixas (usuario_id, nota_fiscal, loja, caixa, quantidade, foto_data_url, foto_nome) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [user.id, campos.notaFiscal, campos.loja, campos.caixa, campos.quantidade, campos.fotoDataUrl, campos.fotoNome]
-    );
-    await db.execute(
-      "INSERT INTO astro_devolucoes_controle (devolucao_id, cancelada) VALUES (?, 0)",
-      [result.insertId]
-    );
-    await db.execute(
-      "INSERT INTO astro_devolucoes_auditoria (devolucao_id, usuario_id, acao, detalhes) VALUES (?, ?, 'CRIACAO', ?)",
-      [result.insertId, user.id, JSON.stringify({ notaFiscal: campos.notaFiscal, loja: campos.loja, caixa: campos.caixa, quantidade: campos.quantidade })]
-    );
-    return send(res, 201, { success: true, id: result.insertId, message: "Devolução registrada com sucesso." });
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+      const [result] = await connection.execute(
+        "INSERT INTO astro_devolucoes_caixas (usuario_id, nota_fiscal, loja, caixa, quantidade, foto_data_url, foto_nome) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [user.id, campos.notaFiscal, campos.loja, campos.caixa, campos.quantidade, campos.fotoDataUrl, campos.fotoNome]
+      );
+      await connection.execute(
+        "INSERT INTO astro_devolucoes_controle (devolucao_id, cancelada) VALUES (?, 0)",
+        [result.insertId]
+      );
+      await connection.execute(
+        "INSERT INTO astro_devolucoes_auditoria (devolucao_id, usuario_id, acao, detalhes) VALUES (?, ?, 'CRIACAO', ?)",
+        [result.insertId, user.id, JSON.stringify({ notaFiscal: campos.notaFiscal, loja: campos.loja, caixa: campos.caixa, quantidade: campos.quantidade })]
+      );
+      await connection.commit();
+      return send(res, 201, { success: true, id: result.insertId, message: "Devolução registrada com sucesso." });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   } catch (error) {
     const failure = publicAuthError(error, "registrar, alterar ou consultar devoluções");
     return send(res, failure.status, { error: failure.error });
