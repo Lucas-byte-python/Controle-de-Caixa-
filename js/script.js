@@ -1754,3 +1754,43 @@ async function visualizarComprovanteDevolucao(id) {
 
 prepararFormularioDevolucao();
 carregarDevolucoes();
+
+
+// PERFIL E EXCLUSÃO SEGURA DA CONTA
+let perfilAtual = null;
+async function abrirPerfil(){
+ const modal=document.getElementById("modalPerfil");
+ const mensagem=document.getElementById("mensagemExcluirConta");
+ const form=document.getElementById("formExcluirConta");
+ if(form) form.reset();
+ if(mensagem) mensagem.textContent="";
+ modal?.classList.add("show"); modal?.setAttribute("aria-hidden","false");
+ try{
+  const resposta=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});
+  const dados=await resposta.json().catch(()=>({}));
+  if(!resposta.ok||!dados.user) throw new Error("Sua sessão expirou. Entre novamente.");
+  perfilAtual=dados.user;
+  document.getElementById("perfilNome").textContent=dados.user.nome||"Usuário";
+  document.getElementById("perfilEmail").textContent=dados.user.email||"";
+  document.getElementById("perfilInicial").textContent=(dados.user.nome||"U").trim().charAt(0).toUpperCase();
+ }catch(erro){ if(mensagem) mensagem.textContent=erro.message; }
+}
+function fecharPerfil(){const modal=document.getElementById("modalPerfil");modal?.classList.remove("show");modal?.setAttribute("aria-hidden","true");}
+document.getElementById("modalPerfil")?.addEventListener("click",e=>{if(e.target.id==="modalPerfil") fecharPerfil();});
+document.getElementById("formExcluirConta")?.addEventListener("submit",async function(event){
+ event.preventDefault();
+ const senha=document.getElementById("senhaExcluirConta").value;
+ const confirmacao=document.getElementById("confirmacaoExcluirConta").value.trim();
+ const mensagem=document.getElementById("mensagemExcluirConta");
+ const botao=document.getElementById("botaoExcluirConta");
+ if(confirmacao!=="EXCLUIR"){mensagem.textContent="Digite exatamente EXCLUIR para continuar.";return;}
+ if(!window.confirm("Última confirmação: deseja apagar permanentemente esta conta e os registros de devolução vinculados?")) return;
+ botao.disabled=true;botao.textContent="Excluindo...";mensagem.textContent="Validando senha e excluindo conta...";
+ try{
+  const resposta=await fetch("/api/auth/delete-account",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({senha,confirmacao})});
+  const dados=await resposta.json().catch(()=>({}));
+  if(!resposta.ok) throw new Error(dados.error||"Não foi possível excluir a conta.");
+  alert("Sua conta foi excluída. Você será direcionado à tela inicial.");
+  window.location.replace("/html/login.html");
+ }catch(erro){mensagem.textContent=erro.message;botao.disabled=false;botao.textContent="Excluir minha conta";}
+});
