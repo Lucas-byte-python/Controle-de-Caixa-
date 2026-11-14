@@ -1,8 +1,16 @@
-// Proteção básica de navegação: exige sessão local antes de abrir o painel.
-if (localStorage.getItem("astroSessao") !== "ativa") {
-    window.location.replace("/html/load.html");
-    throw new Error("Acesso restrito: sessão não encontrada.");
-}
+// Confere a sessão no servidor. O cookie é HttpOnly e não fica acessível ao JavaScript.
+fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" })
+    .then(resposta => {
+        if (!resposta.ok) window.location.replace("/html/login.html");
+        else return resposta.json();
+    })
+    .then(dados => {
+        if (dados && dados.user) {
+            const campo = document.getElementById("usuarioLogado");
+            if (campo) campo.textContent = dados.user.nome;
+        }
+    })
+    .catch(() => window.location.replace("/html/login.html"));
 
 // ASTROAGROCOMERCIAL | Controle de Caixas e Paletes
 // Lógica de inicialização e recarga
@@ -1496,16 +1504,15 @@ atualizarTudo();
 // =========================
 // IDENTIFICAÇÃO E ENCERRAMENTO DA SESSÃO
 // =========================
-function encerrarSessao() {
+async function encerrarSessao() {
     if (!confirm("Deseja realmente sair do sistema?")) return;
-    localStorage.removeItem("astroSessao");
-    sessionStorage.removeItem("astroNomeUsuario");
-    window.location.replace("/html/load.html");
-}
 
-(function exibirUsuarioLogado() {
-    const campo = document.getElementById("usuarioLogado");
-    if (!campo) return;
-    const nome = sessionStorage.getItem("astroNomeUsuario");
-    if (nome) campo.textContent = nome;
-})();
+    try {
+        await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "same-origin"
+        });
+    } finally {
+        window.location.replace("/html/login.html");
+    }
+}
