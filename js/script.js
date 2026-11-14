@@ -1508,11 +1508,13 @@ async function encerrarSessao() {
     if (!confirm("Deseja realmente sair do sistema?")) return;
 
     try {
-        await fetch("/api/auth/logout", {
+        const resposta = await fetch("/api/auth/logout", {
             method: "POST",
             credentials: "same-origin"
         });
-    } finally {
+        if (!resposta.ok) throw new Error("Não foi possível encerrar a sessão.");
         window.location.replace("/html/login.html");
+    } catch (error) {
+        alert("Não foi possível sair agora. Verifique sua conexão e tente novamente.");
     }
 }
