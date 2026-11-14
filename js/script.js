@@ -1560,6 +1560,7 @@ function escaparDevolucao(valor) {
 }
 
 let devolucaoArquivoUrl = null;
+let idDevolucaoEmEdicao = null;
 
 function limparPreviewDevolucao() {
     if (devolucaoArquivoUrl) {
@@ -1666,6 +1667,11 @@ document.getElementById("formDevolucao")?.addEventListener("submit", async funct
             fotoNome: arquivo ? arquivo.name : null
         };
 
+        if (idDevolucaoEmEdicao) {
+            payload.acao = "editar";
+            payload.id = idDevolucaoEmEdicao;
+        }
+
         const resposta = await fetch("/api/devolucoes", {
             method: "POST",
             credentials: "same-origin",
@@ -1673,34 +1679,21 @@ document.getElementById("formDevolucao")?.addEventListener("submit", async funct
             body: JSON.stringify(payload)
         });
         const dados = await resposta.json().catch(() => ({}));
-        if (!resposta.ok) throw new Error(dados.error || "Não foi possível registrar a devolução.");
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível salvar a devolução.");
 
-        // A devolução física retorna as caixas ao CD: lança automaticamente uma entrada no estoque.
-        // O mesmo registro alimenta dashboard, saldo por tipo, gráficos, histórico e relatórios.
-        const entradaDevolucao = {
-            id: Date.now() + Math.floor(Math.random() * 1000),
-            data: new Date().toISOString(),
-            categoria: "caixa",
-            material: payload.caixa,
-            movimento: "entrada",
-            quantidade: payload.quantidade,
-            destino: payload.loja,
-            observacao: "Devolução da NF " + payload.notaFiscal
-        };
-
-        movimentacoes.push(entradaDevolucao);
-        salvar();
-        atualizarTudo();
-
+        const estavaEditando = Boolean(idDevolucaoEmEdicao);
+        idDevolucaoEmEdicao = null;
         this.reset();
         limparPreviewDevolucao();
-        mensagemDevolucao("Devolução confirmada! " + payload.quantidade.toLocaleString("pt-BR") + " caixa(s) adicionada(s) ao estoque.");
         await carregarDevolucoes();
+        mensagemDevolucao(estavaEditando
+            ? "Devolução alterada. O estoque foi recalculado com os dados corrigidos."
+            : "Devolução confirmada! " + payload.quantidade.toLocaleString("pt-BR") + " caixa(s) adicionada(s) ao estoque.");
     } catch (erro) {
         mensagemDevolucao(erro.message || "Erro ao salvar a devolução.", true);
     } finally {
         botao.disabled = false;
-        botao.textContent = "Confirmar recebimento";
+        botao.textContent = idDevolucaoEmEdicao ? "Salvar alteração" : "Confirmar recebimento";
     }
 });
 
@@ -1713,34 +1706,126 @@ document.getElementById("filtroDevolucoes")?.addEventListener("input", () => {
     carregarDevolucoes();
 });
 
+function sincronizarEstoqueDevolucoes(registros) {
+    // Entradas de devolução são reconstruídas a partir do banco, evitando duplicidades.
+    movimentacoes = movimentacoes.filter(item =>
+        !item.origemDevolucao &&
+        !item.devolucaoId &&
+        !String(item.observacao || "").startsWith("Devolução da NF ")
+    );
+
+    (registros || []).filter(item => Number(item.cancelada) !== 1).forEach(item => {
+        movimentacoes.push({
+            id: "devolucao-" + Number(item.id),
+            devolucaoId: Number(item.id),
+            origemDevolucao: true,
+            data: item.recebido_em ? new Date(item.recebido_em).toISOString() : new Date().toISOString(),
+            categoria: "caixa",
+            material: item.caixa,
+            movimento: "entrada",
+            quantidade: Number(item.quantidade),
+            destino: item.loja,
+            observacao: "Devolução da NF " + item.nota_fiscal
+        });
+    });
+    salvar();
+    atualizarTudo();
+}
+
 async function carregarDevolucoes() {
     const tabela = document.getElementById("tabelaDevolucoes");
     if (!tabela) return;
-    tabela.innerHTML = '<tr><td colspan="7" class="empty">Carregando devoluções...</td></tr>';
+    tabela.innerHTML = '<tr><td colspan="9" class="empty">Carregando devoluções...</td></tr>';
     try {
         const resposta = await fetch("/api/devolucoes", { credentials: "same-origin", cache: "no-store" });
         const dados = await resposta.json().catch(() => ({}));
         if (!resposta.ok) throw new Error(dados.error || "Não foi possível carregar o histórico.");
+        const todosRegistros = dados.devolucoes || [];
+        sincronizarEstoqueDevolucoes(todosRegistros);
         const filtro = (document.getElementById("filtroDevolucoes")?.value || "").trim().toLocaleLowerCase("pt-BR");
-        const registros = (dados.devolucoes || []).filter(item =>
-            [item.nota_fiscal, item.loja, item.caixa, item.registrado_por]
+        const registros = todosRegistros.filter(item =>
+            [item.nota_fiscal, item.loja, item.caixa, item.registrado_por, item.alterado_por]
                 .some(valor => String(valor || "").toLocaleLowerCase("pt-BR").includes(filtro))
         );
         if (!registros.length) {
-            tabela.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma devolução encontrada.</td></tr>';
+            tabela.innerHTML = '<tr><td colspan="9" class="empty">Nenhuma devolução encontrada.</td></tr>';
             return;
         }
-        tabela.innerHTML = registros.map(item => `<tr>
-            <td>${escaparDevolucao(formatarDataDevolucao(item.recebido_em))}</td>
-            <td><strong>${escaparDevolucao(item.nota_fiscal)}</strong></td>
-            <td>${escaparDevolucao(item.loja)}</td>
-            <td>${escaparDevolucao(item.caixa)}</td>
-            <td>${Number(item.quantidade).toLocaleString("pt-BR")}</td>
-            <td>${escaparDevolucao(item.registrado_por || "—")}</td>
-            <td>${item.foto_nome ? '<button type="button" class="btn btn-secondary btn-small" onclick="visualizarComprovanteDevolucao(' + Number(item.id) + ')">Ver anexo</button>' : '<span class="return-no-file">Sem anexo</span>'}</td>
-        </tr>`).join("");
+        tabela.innerHTML = registros.map(item => {
+            const cancelada = Number(item.cancelada) === 1;
+            const acoes = cancelada
+                ? '<span class="return-no-file">Sem ações</span>'
+                : '<button type="button" class="btn btn-secondary btn-small" onclick="editarDevolucao(' + Number(item.id) + ')">Alterar</button> <button type="button" class="btn btn-danger btn-small" onclick="cancelarDevolucao(' + Number(item.id) + ')">Cancelar</button>';
+            return `<tr class="${cancelada ? "return-cancelled-row" : ""}">
+                <td>${escaparDevolucao(formatarDataDevolucao(item.recebido_em))}</td>
+                <td><strong>${escaparDevolucao(item.nota_fiscal)}</strong></td>
+                <td>${escaparDevolucao(item.loja)}</td>
+                <td>${escaparDevolucao(item.caixa)}</td>
+                <td>${Number(item.quantidade).toLocaleString("pt-BR")}</td>
+                <td>${escaparDevolucao(item.registrado_por || "—")}</td>
+                <td>${item.foto_nome ? '<button type="button" class="btn btn-secondary btn-small" onclick="visualizarComprovanteDevolucao(' + Number(item.id) + ')">Ver anexo</button>' : '<span class="return-no-file">Sem anexo</span>'}</td>
+                <td><span class="return-status ${cancelada ? "cancelled" : "active"}">${cancelada ? "Cancelada" : "Ativa"}</span>${item.alterado_por ? '<small class="return-edited-by">Alterada por ' + escaparDevolucao(item.alterado_por) + '</small>' : ""}</td>
+                <td class="return-actions">${acoes} <button type="button" class="btn btn-secondary btn-small" onclick="verHistoricoDevolucao(${Number(item.id)})">Histórico</button></td>
+            </tr>`;
+        }).join("");
     } catch (erro) {
-        tabela.innerHTML = '<tr><td colspan="7" class="empty">' + escaparDevolucao(erro.message) + '</td></tr>';
+        tabela.innerHTML = '<tr><td colspan="9" class="empty">' + escaparDevolucao(erro.message) + '</td></tr>';
+    }
+}
+
+async function editarDevolucao(id) {
+    try {
+        const resposta = await fetch("/api/devolucoes", { credentials: "same-origin", cache: "no-store" });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível abrir a devolução.");
+        const item = (dados.devolucoes || []).find(registro => Number(registro.id) === Number(id));
+        if (!item || Number(item.cancelada) === 1) throw new Error("A devolução não está disponível para alteração.");
+        idDevolucaoEmEdicao = Number(id);
+        document.getElementById("devolucaoNota").value = item.nota_fiscal || "";
+        document.getElementById("devolucaoLoja").value = item.loja || "";
+        document.getElementById("devolucaoCaixa").value = item.caixa || "";
+        document.getElementById("devolucaoQuantidade").value = item.quantidade || "";
+        document.getElementById("devolucaoFoto").value = "";
+        limparPreviewDevolucao();
+        document.getElementById("botaoSalvarDevolucao").textContent = "Salvar alteração";
+        mensagemDevolucao("Editando a devolução #" + id + ". Se não escolher outro anexo, o arquivo atual será mantido.");
+        document.getElementById("formDevolucao").scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (erro) {
+        mensagemDevolucao(erro.message, true);
+    }
+}
+
+async function cancelarDevolucao(id) {
+    if (!window.confirm("Confirma o cancelamento desta devolução? A entrada correspondente será retirada do estoque. O registro continuará no histórico.")) return;
+    try {
+        const resposta = await fetch("/api/devolucoes", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ acao: "cancelar", id })
+        });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível cancelar a devolução.");
+        await carregarDevolucoes();
+        mensagemDevolucao("Devolução cancelada. A quantidade foi retirada do estoque.");
+    } catch (erro) {
+        mensagemDevolucao(erro.message || "Erro ao cancelar a devolução.", true);
+    }
+}
+
+async function verHistoricoDevolucao(id) {
+    try {
+        const resposta = await fetch("/api/devolucoes?historico=" + encodeURIComponent(id), {
+            credentials: "same-origin", cache: "no-store"
+        });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível consultar o histórico.");
+        const linhas = (dados.historico || []).map(item =>
+            formatarDataDevolucao(item.criado_em) + " — " + item.acao.replace(/_/g, " ") + " — " + (item.realizado_por || "Usuário")
+        );
+        alert(linhas.length ? "Histórico da devolução #" + id + "\n\n" + linhas.join("\n") : "Nenhuma alteração registrada para esta devolução.");
+    } catch (erro) {
+        alert(erro.message || "Erro ao consultar histórico.");
     }
 }
 
