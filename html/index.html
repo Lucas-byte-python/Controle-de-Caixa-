@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASTROAGROCOMERCIAL | Controle de Caixa e Palete</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=20261114-preview2">
     <link rel="icon" href="/img/ecossistema-astro-icon.png" type="image/png">
 
     <!-- Ao recarregar a página principal (F5/Ctrl+R), exibe novamente a tela de LOAD. -->
@@ -534,7 +534,7 @@
                         <div class="form-group return-file-group">
                             <label for="devolucaoFoto">Anexo da nota / comprovante (opcional)</label>
                             <div class="return-file-control">
-                                <input id="devolucaoFoto" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
+                                <input id="devolucaoFoto" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" onchange="atualizarPreviewDevolucao(this)">
                                 <button id="devolucaoPreview" class="return-preview" type="button" onclick="visualizarArquivoSelecionado()" hidden aria-label="Ampliar pré-visualização do anexo">
                                     <img id="devolucaoPreviewImg" alt="Pré-visualização da nota fiscal">
                                     <span id="devolucaoPreviewPdf" class="return-pdf-icon" hidden>PDF</span>
@@ -714,6 +714,6 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/js/script.js"></script>
+<script src="/js/script.js?v=20261114-preview2"></script>
 </body>
 </html>
