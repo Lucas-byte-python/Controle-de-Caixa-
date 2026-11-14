@@ -4,6 +4,7 @@ const { getPool, send, onlyMethod } = require("../_lib/auth");
 module.exports = async function handler(req, res) {
   if (!onlyMethod(req, res, "POST")) return;
 
+  let connection;
   try {
     const nome = String(req.body?.nome || "").trim();
     const email = String(req.body?.email || "").trim().toLowerCase();
@@ -19,27 +20,29 @@ module.exports = async function handler(req, res) {
       return send(res, 400, { error: "A senha deve ter entre 8 e 72 caracteres." });
     }
 
-    const db = getPool();
     const senhaHash = await bcrypt.hash(senha, 12);
+    connection = await getPool().getConnection();
+    await connection.beginTransaction();
 
-    try {
-      const [result] = await db.execute(
-        "INSERT INTO astro_usuarios (nome, email, senha_hash) VALUES (?, ?, ?)",
-        [nome, email, senhaHash]
-      );
-      await db.execute(
-        "INSERT INTO astro_configuracoes (usuario_id, configuracoes) VALUES (?, JSON_OBJECT())",
-        [result.insertId]
-      );
-      return send(res, 201, { success: true, message: "Cadastro realizado. Agora entre com seu e-mail e senha." });
-    } catch (error) {
-      if (error.code === "ER_DUP_ENTRY") {
-        return send(res, 409, { error: "Este e-mail já possui cadastro. Faça login." });
-      }
-      throw error;
-    }
+    const [result] = await connection.execute(
+      "INSERT INTO astro_usuarios (nome, email, senha_hash) VALUES (?, ?, ?)",
+      [nome, email, senhaHash]
+    );
+    await connection.execute(
+      "INSERT INTO astro_configuracoes (usuario_id, configuracoes) VALUES (?, JSON_OBJECT())",
+      [result.insertId]
+    );
+
+    await connection.commit();
+    return send(res, 201, { success: true, message: "Cadastro realizado. Agora entre com seu e-mail e senha." });
   } catch (error) {
+    if (connection) await connection.rollback().catch(() => {});
+    if (error.code === "ER_DUP_ENTRY") {
+      return send(res, 409, { error: "Este e-mail já possui cadastro. Faça login." });
+    }
     console.error("Erro no cadastro:", error);
     return send(res, 500, { error: "Não foi possível concluir o cadastro. Confira a conexão com o banco." });
+  } finally {
+    if (connection) connection.release();
   }
 };
