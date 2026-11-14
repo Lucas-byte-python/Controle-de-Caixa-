@@ -1,0 +1,14 @@
+{
+  "name": "controle-de-caixa-astro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema ASTRO de controle de caixas e paletes com autenticação MySQL",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.1"
+  }
+}
