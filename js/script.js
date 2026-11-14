@@ -1566,44 +1566,49 @@ function limparPreviewDevolucao() {
         URL.revokeObjectURL(devolucaoArquivoUrl);
         devolucaoArquivoUrl = null;
     }
+
     const preview = document.getElementById("devolucaoPreview");
     const imagem = document.getElementById("devolucaoPreviewImg");
     const pdf = document.getElementById("devolucaoPreviewPdf");
-    if (preview) preview.hidden = true;
+    const nome = document.getElementById("devolucaoFotoNome");
+
+    if (preview) {
+        preview.hidden = true;
+        preview.style.display = "none";
+    }
     if (imagem) {
         imagem.hidden = true;
         imagem.removeAttribute("src");
     }
     if (pdf) pdf.hidden = true;
+    if (nome) nome.textContent = "";
 }
 
-function visualizarArquivoSelecionado() {
-    if (!devolucaoArquivoUrl) return;
-    const janela = window.open(devolucaoArquivoUrl, "_blank");
-    if (!janela) {
-        alert("Permita a abertura de janelas pop-up para visualizar o anexo.");
-        return;
-    }
-    janela.opener = null;
-}
-
-document.getElementById("devolucaoFoto")?.addEventListener("change", function () {
-    const arquivo = this.files && this.files[0];
+function atualizarPreviewDevolucao(input) {
+    const arquivo = input && input.files ? input.files[0] : null;
     const preview = document.getElementById("devolucaoPreview");
     const imagem = document.getElementById("devolucaoPreviewImg");
     const pdf = document.getElementById("devolucaoPreviewPdf");
+    const nome = document.getElementById("devolucaoFotoNome");
+
     limparPreviewDevolucao();
-    if (!arquivo) return;
+    if (!arquivo || !preview || !imagem || !pdf || !nome) return;
 
     const tiposPermitidos = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-    if (!tiposPermitidos.includes(arquivo.type) || arquivo.size > 2 * 1024 * 1024) {
-        this.value = "";
+    const tipoValido = tiposPermitidos.includes(arquivo.type) ||
+        (/\\.(pdf|jpe?g|png|webp)$/i).test(arquivo.name);
+
+    if (!tipoValido || arquivo.size > 2 * 1024 * 1024) {
+        input.value = "";
         mensagemDevolucao("Anexe PDF, JPG, PNG ou WEBP de até 2 MB.", true);
         return;
     }
 
     devolucaoArquivoUrl = URL.createObjectURL(arquivo);
-    if (arquivo.type.startsWith("image/")) {
+    const ehImagem = arquivo.type.startsWith("image/") ||
+        (/\\.(jpe?g|png|webp)$/i).test(arquivo.name);
+
+    if (ehImagem) {
         imagem.src = devolucaoArquivoUrl;
         imagem.hidden = false;
         pdf.hidden = true;
@@ -1611,10 +1616,22 @@ document.getElementById("devolucaoFoto")?.addEventListener("change", function ()
         imagem.hidden = true;
         pdf.hidden = false;
     }
-    document.getElementById("devolucaoFotoNome").textContent = arquivo.name;
+
+    nome.textContent = arquivo.name;
     preview.hidden = false;
+    preview.style.display = "flex";
     mensagemDevolucao("");
-});
+}
+
+function visualizarArquivoSelecionado() {
+    if (!devolucaoArquivoUrl) return;
+    const janela = window.open(devolucaoArquivoUrl, "_blank");
+    if (!janela) {
+        mensagemDevolucao("O navegador bloqueou a visualização. Permita pop-ups para este site.", true);
+        return;
+    }
+    janela.opener = null;
+}
 
 document.getElementById("formDevolucao")?.addEventListener("submit", async function (event) {
     event.preventDefault();
