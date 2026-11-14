@@ -17,7 +17,10 @@ O projeto tem como objetivo facilitar o acompanhamento das entradas e saídas, p
 - **Relatórios personalizados:** geração de relatórios de caixas, paletes ou ambos.
 - **Impressão:** relatórios organizados para impressão.
 - **Gráficos:** visualização das movimentações por meio de gráficos.
-- **Armazenamento local:** os dados são armazenados no navegador utilizando LocalStorage.
+- **Cadastro e login:** autenticação de usuários pelo backend, com senhas protegidas por bcrypt.
+- **Sessões seguras:** cookie HttpOnly validado pelo servidor.
+- **Banco MySQL:** cadastro de usuários e estrutura para configurações individuais.
+- **Movimentações:** continuam armazenadas localmente no navegador nesta etapa.
 - **Interface responsiva:** layout desenvolvido para proporcionar uma experiência prática e organizada.
 
 ---
