@@ -1562,17 +1562,25 @@ function escaparDevolucao(valor) {
 document.getElementById("devolucaoFoto")?.addEventListener("change", function () {
     const arquivo = this.files && this.files[0];
     const preview = document.getElementById("devolucaoPreview");
+    const imagem = document.getElementById("devolucaoPreviewImg");
     if (!arquivo) {
         preview.hidden = true;
         return;
     }
-    if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type) || arquivo.size > 2 * 1024 * 1024) {
+    const tiposPermitidos = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+    if (!tiposPermitidos.includes(arquivo.type) || arquivo.size > 2 * 1024 * 1024) {
         this.value = "";
         preview.hidden = true;
-        mensagemDevolucao("Selecione uma imagem JPG, PNG ou WEBP de até 2 MB.", true);
+        mensagemDevolucao("Anexe PDF, JPG, PNG ou WEBP de até 2 MB.", true);
         return;
     }
-    document.getElementById("devolucaoPreviewImg").src = URL.createObjectURL(arquivo);
+    if (arquivo.type.startsWith("image/")) {
+        imagem.hidden = false;
+        imagem.src = URL.createObjectURL(arquivo);
+    } else {
+        imagem.hidden = true;
+        imagem.removeAttribute("src");
+    }
     document.getElementById("devolucaoFotoNome").textContent = arquivo.name;
     preview.hidden = false;
     mensagemDevolucao("");
@@ -1581,21 +1589,25 @@ document.getElementById("devolucaoFoto")?.addEventListener("change", function ()
 document.getElementById("formDevolucao")?.addEventListener("submit", async function (event) {
     event.preventDefault();
     const botao = document.getElementById("botaoSalvarDevolucao");
-    const arquivo = document.getElementById("devolucaoFoto").files[0];
-    if (!arquivo) return mensagemDevolucao("Anexe a foto da nota fiscal ou do comprovante.", true);
-    if (arquivo.size > 2 * 1024 * 1024) return mensagemDevolucao("A imagem deve ter no máximo 2 MB.", true);
+    const arquivo = document.getElementById("devolucaoFoto").files[0] || null;
+    if (arquivo && (!["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(arquivo.type) || arquivo.size > 2 * 1024 * 1024)) {
+        return mensagemDevolucao("O anexo deve ser PDF, JPG, PNG ou WEBP de até 2 MB.", true);
+    }
 
     botao.disabled = true;
     botao.textContent = "Salvando...";
-    mensagemDevolucao("Enviando registro e comprovante...");
+    mensagemDevolucao(arquivo ? "Enviando registro e anexo..." : "Salvando devolução...");
 
     try {
-        const fotoDataUrl = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(new Error("Não foi possível ler a imagem."));
-            reader.readAsDataURL(arquivo);
-        });
+        let fotoDataUrl = null;
+        if (arquivo) {
+            fotoDataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error("Não foi possível ler o anexo."));
+                reader.readAsDataURL(arquivo);
+            });
+        }
 
         const payload = {
             notaFiscal: document.getElementById("devolucaoNota").value.trim(),
@@ -1603,7 +1615,7 @@ document.getElementById("formDevolucao")?.addEventListener("submit", async funct
             caixa: document.getElementById("devolucaoCaixa").value,
             quantidade: Number(document.getElementById("devolucaoQuantidade").value),
             fotoDataUrl,
-            fotoNome: arquivo.name
+            fotoNome: arquivo ? arquivo.name : null
         };
 
         const resposta = await fetch("/api/devolucoes", {
@@ -1660,7 +1672,7 @@ async function carregarDevolucoes() {
             <td>${escaparDevolucao(item.caixa)}</td>
             <td>${Number(item.quantidade).toLocaleString("pt-BR")}</td>
             <td>${escaparDevolucao(item.registrado_por || "—")}</td>
-            <td><button type="button" class="btn btn-secondary btn-small" onclick="visualizarComprovanteDevolucao(${Number(item.id)})">Ver foto</button></td>
+            <td>${item.foto_nome ? '<button type="button" class="btn btn-secondary btn-small" onclick="visualizarComprovanteDevolucao(' + Number(item.id) + ')">Ver anexo</button>' : '<span class="return-no-file">Sem anexo</span>'}</td>
         </tr>`).join("");
     } catch (erro) {
         tabela.innerHTML = '<tr><td colspan="7" class="empty">' + escaparDevolucao(erro.message) + '</td></tr>';
@@ -1673,18 +1685,22 @@ async function visualizarComprovanteDevolucao(id) {
             credentials: "same-origin", cache: "no-store"
         });
         const dados = await resposta.json().catch(() => ({}));
-        if (!resposta.ok) throw new Error(dados.error || "Não foi possível abrir o comprovante.");
+        if (!resposta.ok) throw new Error(dados.error || "Não foi possível abrir o anexo.");
         const janela = window.open("", "_blank");
-        if (!janela) return alert("Permita a abertura de janelas pop-up para visualizar o comprovante.");
-        const imagem = String(dados.fotoDataUrl || "");
-        if (!/^data:image\/(jpeg|png|webp);base64,/.test(imagem)) {
+        if (!janela) return alert("Permita a abertura de janelas pop-up para visualizar o anexo.");
+        const arquivo = String(dados.fotoDataUrl || "");
+        if (!/^data:(application\/pdf|image\/(jpeg|png|webp));base64,/.test(arquivo)) {
             janela.close();
-            throw new Error("O comprovante armazenado não é uma imagem válida.");
+            throw new Error("O anexo armazenado não é válido.");
         }
-        janela.document.write("<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'><title>Comprovante de devolução</title><meta name='viewport' content='width=device-width,initial-scale=1'><style>body{margin:0;padding:24px;background:#0b1d36;color:#fff;font:14px Arial;text-align:center}img{max-width:100%;height:auto;max-height:90vh;object-fit:contain}h2{font-size:17px}</style></head><body><h2>Comprovante de devolução</h2><img alt='Foto do comprovante' src='" + imagem + "'></body></html>");
+        const ehPdf = arquivo.startsWith("data:application/pdf;");
+        const conteudo = ehPdf
+            ? "<iframe title='Nota fiscal em PDF' src='" + arquivo + "' style='width:100%;height:90vh;border:0'></iframe>"
+            : "<img alt='Foto do comprovante' src='" + arquivo + "' style='max-width:100%;height:auto;max-height:90vh;object-fit:contain'>";
+        janela.document.write("<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'><title>Anexo da devolução</title><meta name='viewport' content='width=device-width,initial-scale=1'><style>body{margin:0;padding:24px;background:#0b1d36;color:#fff;font:14px Arial;text-align:center}h2{font-size:17px}</style></head><body><h2>" + escaparDevolucao(dados.fotoNome || "Anexo da devolução") + "</h2>" + conteudo + "</body></html>");
         janela.document.close();
     } catch (erro) {
-        alert(erro.message || "Erro ao abrir comprovante.");
+        alert(erro.message || "Erro ao abrir anexo.");
     }
 }
 
