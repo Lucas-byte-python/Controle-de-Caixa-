@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const { getPool, send, onlyMethod } = require("../_lib/auth");
+const { getPool, send, onlyMethod, publicAuthError } = require("../_lib/auth");
 
 module.exports = async function handler(req, res) {
   if (!onlyMethod(req, res, "POST")) return;
@@ -40,8 +40,8 @@ module.exports = async function handler(req, res) {
     if (error.code === "ER_DUP_ENTRY") {
       return send(res, 409, { error: "Este e-mail já possui cadastro. Faça login." });
     }
-    console.error("Erro no cadastro:", error);
-    return send(res, 500, { error: "Não foi possível concluir o cadastro. Confira a conexão com o banco." });
+    const failure = publicAuthError(error, "realizar o cadastro");
+    return send(res, failure.status, { error: failure.error });
   } finally {
     if (connection) connection.release();
   }
