@@ -99,6 +99,7 @@
             <div class="topbar-account">
                 <div class="date" id="dataAtual"></div>
                 <div class="account-chip"><span class="account-dot"></span><span id="usuarioLogado">Colaborador</span></div>
+                <button class="btn-perfil" type="button" onclick="abrirPerfil()">Meu perfil</button>
                 <button class="btn-sair" type="button" onclick="encerrarSessao()">Sair</button>
             </div>
 
@@ -613,6 +614,34 @@
 </div>
 
 <div id="areaImpressao" class="print-area" aria-hidden="true"></div>
+
+<div class="profile-overlay" id="modalPerfil" aria-hidden="true">
+  <section class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="perfilTitulo">
+    <div class="profile-heading">
+      <div><span class="profile-eyebrow">CONTA ASTRO</span><h2 id="perfilTitulo">Meu perfil</h2></div>
+      <button type="button" class="profile-close" onclick="fecharPerfil()" aria-label="Fechar">×</button>
+    </div>
+    <div class="profile-details">
+      <div class="profile-avatar" id="perfilInicial">U</div>
+      <div><strong id="perfilNome">Usuário</strong><span id="perfilEmail">Carregando e-mail...</span></div>
+    </div>
+    <div class="profile-warning">
+      <strong>Excluir minha conta</strong>
+      <p>Esta ação é permanente. Seu acesso, e-mail, senha cadastrada e registros de devolução associados à conta serão apagados. O botão “Sair” continua apenas encerrando sua sessão.</p>
+    </div>
+    <form id="formExcluirConta" class="profile-delete-form">
+      <label for="senhaExcluirConta">Confirme sua senha atual</label>
+      <input id="senhaExcluirConta" type="password" autocomplete="current-password" required minlength="8" placeholder="Sua senha atual">
+      <label for="confirmacaoExcluirConta">Digite EXCLUIR para confirmar</label>
+      <input id="confirmacaoExcluirConta" type="text" autocomplete="off" required placeholder="EXCLUIR">
+      <p id="mensagemExcluirConta" class="profile-delete-message" role="status"></p>
+      <div class="profile-actions">
+        <button type="button" class="btn btn-secondary" onclick="fecharPerfil()">Cancelar</button>
+        <button type="submit" class="btn-excluir-conta" id="botaoExcluirConta">Excluir minha conta</button>
+      </div>
+    </form>
+  </section>
+</div>
 
 <div class="modal" id="modal">
     <div class="modal-content">
