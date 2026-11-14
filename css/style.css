@@ -164,3 +164,23 @@ td{padding:14px;border-bottom:1px solid #96bef01a;font-size:12px;color:#d5e2f4}t
     .report-doc-header,.report-kpis{page-break-inside:avoid}
     *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
+
+
+/* DEVOLUÇÃO DE CAIXAS */
+.return-panel{margin-bottom:20px}
+.return-help{font-size:11px;color:#91aacb;margin-top:6px;line-height:1.5}
+.return-form{margin-top:20px}
+.return-file-group input{padding:9px!important}
+.return-file-group small{font-size:10px;color:#91aacb;margin-top:6px}
+.return-preview{display:flex;align-items:center;gap:14px;margin-top:16px;padding:12px;border:1px solid #78b1ee40;border-radius:10px;background:#0b2245a6;color:#bcd0eb;font-size:11px}
+.return-preview[hidden]{display:none}
+.return-preview img{width:88px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #78b1ee55}
+.return-security-note{font-size:10px;color:#91aacb;margin-top:13px;line-height:1.5}
+.return-message{font-size:11px;margin-top:12px;min-height:16px}
+.return-message.success{color:#65e0b2}
+.return-message.error{color:#ff9aa7}
+.return-search{max-width:420px;margin:0 0 15px}
+.return-search input{width:100%;padding:11px 13px;border:1px solid #97bce847;border-radius:9px;background:#10294e;color:#f4f8ff;outline:none}
+.return-table{min-width:850px}
+.btn-small{padding:7px 10px;font-size:10px}
+@media(max-width:760px){.return-history-heading{align-items:flex-start}.return-search{max-width:none}}
