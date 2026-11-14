@@ -253,9 +253,6 @@
   </div>
 
   <script>
-    const autenticado = localStorage.getItem('astroSessao') === 'ativa';
-    const URL_DESTINO = autenticado ? 'index.html' : 'login.html';
-
     const overlay = document.getElementById('caixa-loader');
     const bar = document.getElementById('loader-bar');
     const statusText = document.getElementById('loader-status');
@@ -276,36 +273,44 @@
       if (mensagem) statusText.textContent = mensagem;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    async function iniciarSistema() {
+      try {
+        const resposta = await fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' });
+        if (!resposta.ok) {
+          window.location.replace('/html/login.html');
+          return;
+        }
+      } catch (error) {
+        statusText.textContent = 'Não foi possível validar o acesso. Verifique sua conexão.';
+        return;
+      }
+
       let progressoAtual = 0;
       let indiceEtapa = 0;
-
       atualizarProgresso(0, 'Iniciando gestão ASTRO...');
 
       const intervalo = setInterval(() => {
-        progressoAtual += Math.floor(Math.random() * 6) + 2;
+        progressoAtual = Math.min(100, progressoAtual + Math.floor(Math.random() * 6) + 2);
 
-        if (indiceEtapa < etapas.length && progressoAtual >= etapas[indiceEtapa].pct) {
+        while (indiceEtapa < etapas.length && progressoAtual >= etapas[indiceEtapa].pct) {
           atualizarProgresso(etapas[indiceEtapa].pct, etapas[indiceEtapa].msg);
           indiceEtapa++;
-        } else if (progressoAtual < 100) {
-          atualizarProgresso(progressoAtual);
         }
+
+        if (progressoAtual < 100) atualizarProgresso(progressoAtual);
 
         if (progressoAtual >= 100) {
           atualizarProgresso(100, 'Tudo pronto! Abrindo o sistema...');
           clearInterval(intervalo);
-
-          // Aguarda um instante em 100%, aplica o fade-out e redireciona
           setTimeout(() => {
             overlay.classList.add('fade-out');
-            setTimeout(() => {
-              window.location.href = URL_DESTINO;
-            }, 450);
+            setTimeout(() => window.location.replace('/html/index.html'), 450);
           }, 300);
         }
       }, 85);
-    });
+    }
+
+    window.addEventListener('DOMContentLoaded', iniciarSistema);
   </script>
 </body>
 </html>
