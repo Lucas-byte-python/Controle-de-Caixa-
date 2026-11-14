@@ -2,44 +2,38 @@
 
 Sistema web desenvolvido para auxiliar no controle e gerenciamento das movimentações de caixas e paletes da **ASTROAGROCOMERCIAL**, empresa do segmento de distribuição de frutas, verduras e hortifrúti.
 
-O projeto tem como objetivo facilitar o acompanhamento das entradas e saídas, proporcionar maior organização operacional e oferecer uma visualização clara dos saldos e históricos de movimentações.
+O projeto facilita o acompanhamento das entradas e saídas, a organização operacional e a visualização dos saldos e históricos.
 
 ---
 
 ## 🚀 Funcionalidades
 
-- **Controle de Caixas:** registro e acompanhamento das entradas e saídas de caixas.
-- **Controle de Paletes:** gerenciamento independente das movimentações de paletes.
-- **Saldo em tempo real:** atualização automática dos saldos conforme as movimentações.
-- **Saldo negativo:** permite registrar movimentações mesmo quando a saída ultrapassa a quantidade disponível.
-- **Histórico de movimentações:** consulta dos registros realizados.
-- **Edição e exclusão:** gerenciamento das movimentações cadastradas.
-- **Relatórios personalizados:** geração de relatórios de caixas, paletes ou ambos.
-- **Impressão:** relatórios organizados para impressão.
-- **Gráficos:** visualização das movimentações por meio de gráficos.
-- **Cadastro e login:** autenticação de usuários pelo backend, com senhas protegidas por bcrypt.
-- **Sessões seguras:** cookie HttpOnly validado pelo servidor.
-- **Banco MySQL:** cadastro de usuários e estrutura para configurações individuais.
-- **Movimentações:** continuam armazenadas localmente no navegador nesta etapa.
-- **Interface responsiva:** layout desenvolvido para proporcionar uma experiência prática e organizada.
+- **Controle de Caixas e Paletes:** registro independente de entradas e saídas.
+- **Saldo negativo:** permite registrar saídas acima da quantidade disponível.
+- **Histórico:** consulta, edição e exclusão de movimentações.
+- **Relatórios:** geração e impressão de relatórios de caixas, paletes ou ambos.
+- **Gráficos:** visualização das movimentações.
+- **Cadastro e login:** autenticação pela API do Vercel.
+- **Senhas protegidas:** armazenamento de hash bcrypt, nunca da senha em texto puro.
+- **Sessões:** cookie HttpOnly validado no servidor.
+- **Banco MySQL:** armazenamento de contas de usuário e estrutura para configurações individuais.
+- **Interface responsiva:** identidade visual corporativa em tons de azul.
 
 ---
 
-## 🎨 Identidade Visual
-
-O sistema utiliza uma identidade visual corporativa inspirada na ASTROAGROCOMERCIAL, com destaque para os tons de azul, proporcionando uma interface moderna, organizada e profissional.
-
----
-
-## 🛠️ Tecnologias utilizadas
+## 🛠️ Tecnologias
 
 | Tecnologia | Aplicação |
 |---|---|
-| HTML5 | Estrutura das páginas |
-| CSS3 | Estilização e identidade visual |
-| JavaScript | Funcionalidades e gerenciamento dos dados |
-| Chart.js | Gráficos e visualização de informações |
-| LocalStorage | Armazenamento dos registros no navegador |
+| HTML5 e CSS3 | Estrutura e interface |
+| JavaScript | Funcionalidades do sistema |
+| Node.js / Vercel Functions | API de autenticação |
+| MySQL | Usuários e configurações |
+| bcryptjs | Hash seguro das senhas |
+| jsonwebtoken | Sessões assinadas |
+| mysql2 | Conexão com MySQL |
+| Chart.js | Gráficos |
+| LocalStorage | Movimentações nesta etapa |
 
 ---
 
@@ -47,48 +41,47 @@ O sistema utiliza uma identidade visual corporativa inspirada na ASTROAGROCOMERC
 
 ```text
 Controle-de-Caixa-/
-│
+├── api/
+│   ├── _lib/auth.js
+│   └── auth/
+│       ├── register.js
+│       ├── login.js
+│       ├── me.js
+│       └── logout.js
+├── database/
+│   ├── schema.sql
+│   └── SETUP.md
 ├── html/
 │   ├── index.html
+│   ├── login.html
 │   └── load.html
-│
 ├── css/
-│   └── style.css
-│
 ├── js/
+│   ├── auth.js
 │   └── script.js
-│
 ├── img/
-│   └── ecossistema-astro-icon.png
-│
+├── package.json
+├── vercel.json
 └── README.md
 ```
 
 ---
 
-## 💾 Armazenamento de dados
+## 💾 Armazenamento e observações
 
-Atualmente, o sistema utiliza o LocalStorage do navegador para armazenar as movimentações.
+O cadastro e o login são preparados para usar o MySQL por meio da API hospedada no Vercel. Para ativar a conexão, é necessário criar o banco, executar `database/schema.sql` e cadastrar as variáveis de ambiente descritas em [database/SETUP.md](database/SETUP.md).
 
-**Importante:** os dados ficam vinculados ao navegador e ao dispositivo utilizados. Limpar os dados do navegador ou utilizar outro dispositivo pode resultar na ausência dos registros anteriores.
+**Importante:** nesta etapa, as movimentações de caixas e paletes ainda são armazenadas no LocalStorage do navegador. Portanto, elas não são sincronizadas entre computadores. A migração do histórico e do estoque para o MySQL será uma etapa separada.
 
 ---
 
-## 🌐 Acesso ao sistema
+## 🌐 Acesso
 
-**Projeto no GitHub:**
+**GitHub:** https://github.com/Lucas-byte-python/Controle-de-Caixa-
 
-https://github.com/Lucas-byte-python/Controle-de-Caixa-
+**Hospedagem:** Vercel
 
 **Desenvolvimento e manutenção:** Lucas de Sousa Santil.
-
----
-
-## 🎯 Objetivo do projeto
-
-Desenvolver uma ferramenta digital que contribua para a organização dos processos internos da ASTROAGROCOMERCIAL, tornando o controle de caixas e paletes mais ágil, visual e eficiente.
-
-O projeto busca transformar atividades operacionais em processos mais organizados, reduzindo a dependência de controles manuais e facilitando o acesso às informações.
 
 ---
 
