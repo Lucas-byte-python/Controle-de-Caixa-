@@ -67,6 +67,13 @@
             </li>
 
             <li>
+                <button onclick="mostrarSecao('devolucoes', this)">
+                    <span class="menu-icon">↩️</span>
+                    <span class="menu-text">Devolução de Caixas</span>
+                </button>
+            </li>
+
+            <li>
                 <button onclick="mostrarSecao('historico', this)">
                     <span class="menu-icon">📋</span>
                     <span class="menu-text">Histórico</span>
@@ -492,6 +499,73 @@
                     <span class="report-empty-icon">📄</span>
                     <strong>Nenhum relatório gerado</strong>
                     <p>Selecione o tipo de relatório e clique em “Gerar relatório”.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEVOLUÇÕES DE CAIXAS -->
+        <section id="devolucoes" class="section">
+            <div class="panel return-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Registrar retorno de caixas</h2>
+                        <p class="return-help">Confirme o recebimento e anexe a foto da nota fiscal ou do comprovante.</p>
+                    </div>
+                    <span class="report-label">COMPROVANTE DE RETORNO</span>
+                </div>
+                <form id="formDevolucao" class="return-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="devolucaoNota">Número da nota fiscal *</label>
+                            <input id="devolucaoNota" type="text" maxlength="50" required placeholder="Ex.: 00012345">
+                        </div>
+                        <div class="form-group">
+                            <label for="devolucaoLoja">Loja de origem *</label>
+                            <input id="devolucaoLoja" type="text" maxlength="120" required placeholder="Ex.: Cometa - Unidade Centro">
+                        </div>
+                        <div class="form-group">
+                            <label for="devolucaoCaixa">Tipo de caixa *</label>
+                            <select id="devolucaoCaixa" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="devolucaoQuantidade">Quantidade recebida *</label>
+                            <input id="devolucaoQuantidade" type="number" min="1" max="1000000" required placeholder="Ex.: 20">
+                        </div>
+                        <div class="form-group return-file-group">
+                            <label for="devolucaoFoto">Foto da nota / comprovante *</label>
+                            <input id="devolucaoFoto" type="file" accept="image/jpeg,image/png,image/webp" required>
+                            <small>JPG, PNG ou WEBP • máximo de 2 MB.</small>
+                        </div>
+                    </div>
+                    <div id="devolucaoPreview" class="return-preview" hidden>
+                        <img id="devolucaoPreviewImg" alt="Pré-visualização do comprovante">
+                        <span id="devolucaoFotoNome"></span>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="botaoSalvarDevolucao">Confirmar recebimento</button>
+                        <button type="reset" class="btn btn-secondary" id="botaoLimparDevolucao">Limpar</button>
+                    </div>
+                    <p class="return-security-note">O registro ficará associado ao usuário conectado. A foto será armazenada no banco de dados do sistema.</p>
+                    <div id="devolucaoMensagem" class="return-message" role="status" aria-live="polite"></div>
+                </form>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header return-history-heading">
+                    <div>
+                        <h2>Histórico de devoluções</h2>
+                        <p class="return-help">Consulte os retornos já confirmados.</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="carregarDevolucoes()">Atualizar lista</button>
+                </div>
+                <div class="return-search">
+                    <input id="filtroDevolucoes" type="search" placeholder="Pesquisar por nota fiscal, loja ou caixa...">
+                </div>
+                <div class="table-container">
+                    <table class="return-table">
+                        <thead><tr><th>Recebimento</th><th>Nota fiscal</th><th>Loja</th><th>Caixa</th><th>Quantidade</th><th>Registrado por</th><th>Comprovante</th></tr></thead>
+                        <tbody id="tabelaDevolucoes"><tr><td colspan="7" class="empty">Carregando devoluções...</td></tr></tbody>
+                    </table>
                 </div>
             </div>
         </section>
