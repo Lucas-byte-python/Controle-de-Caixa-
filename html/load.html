@@ -273,44 +273,50 @@
       if (mensagem) statusText.textContent = mensagem;
     }
 
-    async function iniciarSistema() {
-      try {
-        const resposta = await fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' });
-        if (!resposta.ok) {
-          window.location.replace('/html/login.html');
-          return;
-        }
-      } catch (error) {
-        statusText.textContent = 'Não foi possível validar o acesso. Verifique sua conexão.';
-        return;
-      }
+    // Valida a sessão em paralelo, sem pular a animação original.
+    const validacaoSessao = fetch('/api/auth/me', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    })
+      .then(resposta => resposta.ok ? 'index.html' : 'login.html')
+      .catch(() => null);
 
+    window.addEventListener('DOMContentLoaded', () => {
       let progressoAtual = 0;
       let indiceEtapa = 0;
+
       atualizarProgresso(0, 'Iniciando gestão ASTRO...');
 
       const intervalo = setInterval(() => {
-        progressoAtual = Math.min(100, progressoAtual + Math.floor(Math.random() * 6) + 2);
+        progressoAtual += Math.floor(Math.random() * 6) + 2;
 
-        while (indiceEtapa < etapas.length && progressoAtual >= etapas[indiceEtapa].pct) {
+        if (indiceEtapa < etapas.length && progressoAtual >= etapas[indiceEtapa].pct) {
           atualizarProgresso(etapas[indiceEtapa].pct, etapas[indiceEtapa].msg);
           indiceEtapa++;
+        } else if (progressoAtual < 100) {
+          atualizarProgresso(progressoAtual);
         }
-
-        if (progressoAtual < 100) atualizarProgresso(progressoAtual);
 
         if (progressoAtual >= 100) {
           atualizarProgresso(100, 'Tudo pronto! Abrindo o sistema...');
           clearInterval(intervalo);
-          setTimeout(() => {
-            overlay.classList.add('fade-out');
-            setTimeout(() => window.location.replace('/html/index.html'), 450);
-          }, 300);
+
+          validacaoSessao.then(destino => {
+            if (!destino) {
+              statusText.textContent = 'Não foi possível validar o acesso. Verifique sua conexão.';
+              return;
+            }
+
+            setTimeout(() => {
+              overlay.classList.add('fade-out');
+              setTimeout(() => {
+                window.location.href = '/html/' + destino;
+              }, 450);
+            }, 300);
+          });
         }
       }, 85);
-    }
-
-    window.addEventListener('DOMContentLoaded', iniciarSistema);
+    });
   </script>
 </body>
 </html>
