@@ -20,10 +20,10 @@ module.exports = async function handler(req, res) {
     status.mysqlConnected = true;
 
     const [tables] = await db.execute(
-      "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name IN ('astro_usuarios', 'astro_configuracoes')"
+      "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name IN ('astro_usuarios', 'astro_configuracoes', 'astro_devolucoes_caixas')"
     );
     const names = new Set(tables.map(row => row.TABLE_NAME));
-    status.tablesReady = names.has("astro_usuarios") && names.has("astro_configuracoes");
+    status.tablesReady = names.has("astro_usuarios") && names.has("astro_configuracoes") && names.has("astro_devolucoes_caixas");
     status.ready = status.mysqlConnected && status.tablesReady && status.sessionSecretConfigured;
 
     if (!status.tablesReady) {
