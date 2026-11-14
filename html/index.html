@@ -533,13 +533,16 @@
                         </div>
                         <div class="form-group return-file-group">
                             <label for="devolucaoFoto">Anexo da nota / comprovante (opcional)</label>
-                            <input id="devolucaoFoto" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
-                            <small>Opcional: PDF, JPG, PNG ou WEBP • máximo de 2 MB. O número da nota fiscal é obrigatório.</small>
+                            <div class="return-file-control">
+                                <input id="devolucaoFoto" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
+                                <button id="devolucaoPreview" class="return-preview" type="button" onclick="visualizarArquivoSelecionado()" hidden aria-label="Ampliar pré-visualização do anexo">
+                                    <img id="devolucaoPreviewImg" alt="Pré-visualização da nota fiscal">
+                                    <span id="devolucaoPreviewPdf" class="return-pdf-icon" hidden>PDF</span>
+                                    <span class="return-preview-caption"><strong id="devolucaoFotoNome"></strong><small>Clique para ampliar</small></span>
+                                </button>
+                            </div>
+                            <small>Opcional: PDF, JPG, PNG ou WEBP • máximo de 2 MB. Clique na prévia para visualizar.</small>
                         </div>
-                    </div>
-                    <div id="devolucaoPreview" class="return-preview" hidden>
-                        <img id="devolucaoPreviewImg" alt="Pré-visualização do comprovante">
-                        <span id="devolucaoFotoNome"></span>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" id="botaoSalvarDevolucao">Confirmar recebimento</button>
