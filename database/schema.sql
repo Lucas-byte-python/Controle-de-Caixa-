@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS astro_devolucoes_caixas (
   loja VARCHAR(120) NOT NULL,
   caixa VARCHAR(120) NOT NULL,
   quantidade INT UNSIGNED NOT NULL,
-  foto_data_url LONGTEXT NOT NULL,
-  foto_nome VARCHAR(255) NOT NULL,
+  foto_data_url LONGTEXT NULL,
+  foto_nome VARCHAR(255) NULL,
   recebido_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_astro_devolucoes_usuario (usuario_id),
@@ -41,9 +41,3 @@ CREATE TABLE IF NOT EXISTS astro_devolucoes_caixas (
   KEY idx_astro_devolucoes_data (recebido_em)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
--- O anexo é opcional: número da nota fiscal continua obrigatório.
--- Esta alteração também atualiza instalações que já criaram a tabela.
-ALTER TABLE astro_devolucoes_caixas
-  MODIFY foto_data_url LONGTEXT NULL,
-  MODIFY foto_nome VARCHAR(255) NULL;
