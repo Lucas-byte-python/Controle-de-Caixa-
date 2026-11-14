@@ -1675,9 +1675,26 @@ document.getElementById("formDevolucao")?.addEventListener("submit", async funct
         const dados = await resposta.json().catch(() => ({}));
         if (!resposta.ok) throw new Error(dados.error || "Não foi possível registrar a devolução.");
 
+        // A devolução física retorna as caixas ao CD: lança automaticamente uma entrada no estoque.
+        // O mesmo registro alimenta dashboard, saldo por tipo, gráficos, histórico e relatórios.
+        const entradaDevolucao = {
+            id: Date.now() + Math.floor(Math.random() * 1000),
+            data: new Date().toISOString(),
+            categoria: "caixa",
+            material: payload.caixa,
+            movimento: "entrada",
+            quantidade: payload.quantidade,
+            destino: payload.loja,
+            observacao: "Devolução da NF " + payload.notaFiscal
+        };
+
+        movimentacoes.push(entradaDevolucao);
+        salvar();
+        atualizarTudo();
+
         this.reset();
         limparPreviewDevolucao();
-        mensagemDevolucao("Devolução confirmada e salva com sucesso.");
+        mensagemDevolucao("Devolução confirmada! " + payload.quantidade.toLocaleString("pt-BR") + " caixa(s) adicionada(s) ao estoque.");
         await carregarDevolucoes();
     } catch (erro) {
         mensagemDevolucao(erro.message || "Erro ao salvar a devolução.", true);
