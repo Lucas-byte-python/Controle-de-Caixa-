@@ -1579,8 +1579,12 @@ function limparPreviewDevolucao() {
 
 function visualizarArquivoSelecionado() {
     if (!devolucaoArquivoUrl) return;
-    const janela = window.open(devolucaoArquivoUrl, "_blank", "noopener");
-    if (!janela) alert("Permita a abertura de janelas pop-up para visualizar o anexo.");
+    const janela = window.open(devolucaoArquivoUrl, "_blank");
+    if (!janela) {
+        alert("Permita a abertura de janelas pop-up para visualizar o anexo.");
+        return;
+    }
+    janela.opener = null;
 }
 
 document.getElementById("devolucaoFoto")?.addEventListener("change", function () {
