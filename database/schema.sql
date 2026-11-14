@@ -40,3 +40,10 @@ CREATE TABLE IF NOT EXISTS astro_devolucoes_caixas (
   KEY idx_astro_devolucoes_nota (nota_fiscal),
   KEY idx_astro_devolucoes_data (recebido_em)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- O anexo é opcional: número da nota fiscal continua obrigatório.
+-- Esta alteração também atualiza instalações que já criaram a tabela.
+ALTER TABLE astro_devolucoes_caixas
+  MODIFY foto_data_url LONGTEXT NULL,
+  MODIFY foto_nome VARCHAR(255) NULL;
